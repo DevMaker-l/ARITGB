@@ -1,55 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Portal AR Ultra Otimizado</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <title>Info TV - Diagnóstico Ultra Leve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { margin: 0; overflow: hidden; }
-    .instrucao {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
-      color: #00FFFF;
-      padding: 8px 16px;
+    body {
+      background-color: #0d0f12;
+      color: #00ffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #ffd700;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    .card {
+      background: #161b22;
+      border: 2px solid #00ffff;
       border-radius: 15px;
-      font-family: sans-serif;
-      z-index: 999;
-      pointer-events: none;
-      text-align: center;
-      font-size: 13px;
-      border: 1px solid #00FFFF;
+      padding: 25px;
+      width: 80%;
+      max-width: 800px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    }
+    .info-item {
+      font-size: 1.4rem;
+      margin: 15px 0;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 10px;
+      color: #ffffff;
+    }
+    .info-item span {
+      color: #00ffff;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="instrucao">Modo Ultra Performance Ativo</div>
 
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; sourceWidth: 1280; sourceHeight: 960; displayWidth: 1280; displayHeight: 960;">
-    
-    <a-entity position="0 0 -3" scale="0.35 0.35 0.35">
-      
-      <a-torus position="0 0 0" radius="1" radius-tubular="0.06" color="#FFD700"
-                animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
-      </a-torus>
+  <h1>📺 Raio-X da Smart TV</h1>
 
-      <a-circle position="0 0 -0.01" radius="0.95" color="#000022" opacity="0.8"
-                 animation="property: scale; to: 1.03 1.03 1.03; loop: true; dur: 1000; direction: alternate; easing: easeInOutSine">
-      </a-circle>
-      
-      <a-sphere position="0.7 0.8 0" radius="0.06" color="#00FFFF"
-                 animation="property: position; to: -0.7 -0.8 0; loop: true; dur: 2000; direction: alternate; easing: easeInOutSine"></a-sphere>
-      <a-sphere position="-0.7 0.8 0" radius="0.06" color="#FF00FF"
-                 animation="property: position; to: 0.7 -0.8 0; loop: true; dur: 2500; direction: alternate; easing: easeInOutSine"></a-sphere>
+  <div class="card">
+    <div class="info-item">Sistema/Navegador: <span id="so">Detectando...</span></div>
+    <div class="info-item">Resolução da Tela: <span id="res">Detectando...</span></div>
+    <div class="info-item">Núcleos de Processador (CPU): <span id="cpu">Detectando...</span></div>
+    <div class="info-item">Status da Conexão: <span id="rede">Detectando...</span></div>
+    <div class="info-item">Linguagem do Sistema: <span id="lang">Detectando...</span></div>
+  </div>
 
-    </a-entity>
+  <script>
+    // Pega informações do navegador da TV
+    const ua = navigator.userAgent;
+    let sistema = "Desconhecido / Genérico";
 
-    <a-entity camera></a-entity>
-  </a-scene>
+    if (ua.includes("Tizen")) sistema = "Samsung Smart TV (Tizen)";
+    else if (ua.includes("Web0S") || ua.includes("webOS")) sistema = "LG Smart TV (webOS)";
+    else if (ua.includes("Android")) sistema = "Android TV / Google TV";
+    else if (ua.includes("AFT")) sistema = "Amazon Fire TV";
+    else if (ua.includes("Roku")) sistema = "Roku TV";
+    else sistema = "Navegador Padrão (" + navigator.platform + ")";
+
+    document.getElementById("so").innerText = sistema;
+    document.getElementById("res").innerText = window.screen.width + " x " + window.screen.height + " px";
+    document.getElementById("cpu").innerText = (navigator.hardwareConcurrency || "Não informado") + " núcleos";
+    document.getElementById("rede").innerText = navigator.onLine ? "Conectado à Internet 🟢" : "Offline 🔴";
+    document.getElementById("lang").innerText = navigator.language.toUpperCase();
+  </script>
 
 </body>
 </html>
