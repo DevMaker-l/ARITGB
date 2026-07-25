@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forker & Limpador de HTML</title>
+    <title>Mini Engenharia Reversa - Hub</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: monospace;
+            background-color: #0d1117;
+            color: #c9d1d9;
             padding: 20px;
             margin: 0;
         }
-        h1 { color: #00ff88; }
+        h1 { color: #58a6ff; }
         textarea {
             width: 100%;
-            height: 200px;
-            background-color: #1e1e1e;
-            color: #00ff88;
-            border: 1px solid #333;
-            border-radius: 8px;
+            height: 150px;
+            background-color: #161b22;
+            color: #58a6ff;
+            border: 1px solid #30363d;
+            border-radius: 6px;
             padding: 10px;
             box-sizing: border-box;
             font-family: monospace;
@@ -31,71 +31,86 @@
             flex-wrap: wrap;
         }
         button {
-            background-color: #00ff88;
-            color: #000;
+            background-color: #238636;
+            color: #fff;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 16px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
         }
-        button:hover { background-color: #00cc6c; }
-        .btn-download { background-color: #00bfff; color: #fff; }
+        button:hover { background-color: #2ea043; }
+        .resultado-box {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🛠️ Forker de Páginas Web</h1>
-    <p>Cole o código HTML da página abaixo para modificar e criar sua versão:</p>
+    <h1>🔍 Mini Kit de Engenharia Reversa</h1>
+    <p>Cole o trecho de código, texto ou string codificada abaixo:</p>
 
-    <textarea id="codigoEntrada" placeholder="Cole o código HTML aqui..."></textarea>
+    <textarea id="entradaDados" placeholder="Cole aqui o conteúdo para analisar..."></textarea>
 
     <div class="botoes">
-        <button onclick="removerImagens()">🖼️ Remover Imagens</button>
-        <button onclick="removerEstilos()">🎨 Limpar CSS</button>
-        <button class="btn-download" onclick="baixarFork()">💾 Baixar meu Fork (.html)</button>
+        <button onclick="decodificarBase64()">🔓 Decodificar Base64</button>
+        <button onclick="extrairLinks()">🔗 Extrair Links</button>
+        <button onclick="analisarTexto()">📊 Estatísticas do Código</button>
     </div>
 
+    <h3>Resultados da Análise:</h3>
+    <div id="saidaResultado" class="resultado-box">Nenhuma análise feita ainda...</div>
+
     <script>
-        // Função para remover todas as tags <img> do código
-        function removerImagens() {
-            let areaTexto = document.getElementById('codigoEntrada');
-            let parser = new DOMParser();
-            let doc = parser.parseFromString(areaTexto.value, 'text/html');
-
-            let imagens = doc.querySelectorAll('img');
-            imagens.forEach(img => img.remove());
-
-            areaTexto.value = doc.documentElement.outerHTML;
-            alert('Todas as imagens foram removidas!');
-        }
-
-        // Função para remover todas as tags <style> e links de CSS
-        function removerEstilos() {
-            let areaTexto = document.getElementById('codigoEntrada');
-            let parser = new DOMParser();
-            let doc = parser.parseFromString(areaTexto.value, 'text/html');
-
-            let estilos = doc.querySelectorAll('style, link[rel="stylesheet"]');
-            estilos.forEach(style => style.remove());
-
-            areaTexto.value = doc.documentElement.outerHTML;
-            alert('Estilos limpos com sucesso!');
-        }
-
-        // Função para gerar o arquivo e fazer download no celular/PC
-        function baixarFork() {
-            let codigo = document.getElementById('codigoEntrada').value;
-            if (!codigo) {
-                alert('Cole algum código antes de baixar!');
-                return;
+        // Função para decodificar texto em Base64
+        function decodificarBase64() {
+            let texto = document.getElementById('entradaDados').value.trim();
+            let saida = document.getElementById('saidaResultado');
+            try {
+                let decodificado = atob(texto);
+                saida.innerText = "--- DECODIFICADO (Base64) ---\n\n" + decodificado;
+            } catch (e) {
+                saida.innerText = "Erro: O texto inserido não está em um formato Base64 válido!";
             }
+        }
 
-            let blob = new Blob([codigo], { type: 'text/html' });
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'meu_fork.html';
-            link.click();
+        // Função para extrair URLs e links de dentro do código
+        function extrairLinks() {
+            let texto = document.getElementById('entradaDados').value;
+            let saida = document.getElementById('saidaResultado');
+            
+            // Expressão regular para achar URLs
+            let regexLinks = /https?:\/\/[^\s"'<>]+/g;
+            let linksEncontrados = texto.match(regexLinks);
+
+            if (linksEncontrados && linksEncontrados.length > 0) {
+                // Remove duplicatas
+                let unicos = [...new Set(linksEncontrados)];
+                saida.innerText = "--- LINKS ENCONTRADOS (" + unicos.length + ") ---\n\n" + unicos.join('\n');
+            } else {
+                saida.innerText = "Nenhum link HTTP/HTTPS encontrado neste texto.";
+            }
+        }
+
+        // Função para analisar estatísticas básicas do código
+        function analisarTexto() {
+            let texto = document.getElementById('entradaDados').value;
+            let saida = document.getElementById('saidaResultado');
+
+            let caracteres = texto.length;
+            let linhas = texto.split('\n').length;
+            let palavras = texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
+
+            saida.innerText = `--- ESTATÍSTICAS DO CÓDIGO ---\n` +
+                              `• Caracteres: ${caracteres}\n` +
+                              `• Linhas: ${linhas}\n` +
+                              `• Palavras/Tokens: ${palavras}`;
         }
     </script>
 </body>
