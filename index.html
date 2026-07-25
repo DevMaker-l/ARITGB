@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Radar de Promoções & Descontos 🕹️</title>
+  <title>Radar de Jogos Standalone 🕹️</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,7 +12,7 @@
     }
 
     body {
-      background-color: #0b0e14;
+      background-color: #0d1117;
       color: #ffffff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
@@ -24,57 +24,20 @@
 
     h1 {
       margin-bottom: 8px;
-      color: #00ffcc;
-      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+      color: #ff9900; /* Laranja estilo Half-Life / Sven Co-op */
+      text-shadow: 0 0 12px rgba(255, 153, 0, 0.5);
     }
 
     p.subtitle {
-      color: #8a99ad;
-      margin-bottom: 20px;
+      color: #8b949e;
+      margin-bottom: 24px;
       font-size: 0.95rem;
-    }
-
-    /* Painel do Filtro */
-    .filter-container {
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      padding: 15px 25px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    label {
-      font-weight: bold;
-      color: #00ffcc;
-    }
-
-    select {
-      background-color: #0d1117;
-      color: #fff;
-      border: 1px solid #00ffcc;
-      padding: 8px 15px;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      outline: none;
-    }
-
-    select:focus {
-      box-shadow: 0 0 8px #00ffcc;
-    }
-
-    .status {
-      margin: 20px 0;
-      font-size: 1.1rem;
-      color: #ffcc00;
+      text-align: center;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 20px;
       width: 100%;
       max-width: 1000px;
@@ -92,7 +55,7 @@
 
     .card:hover, .card:focus {
       transform: translateY(-5px);
-      border-color: #00ffcc;
+      border-color: #ff9900;
       outline: none;
     }
 
@@ -112,133 +75,98 @@
     }
 
     .card-title {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
+      color: #f0f6fc;
     }
 
-    .price-tag {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .card-desc {
+      font-size: 0.85rem;
+      color: #8b949e;
       margin-bottom: 12px;
+      line-height: 1.3;
     }
 
-    .badge-discount {
-      background-color: #238636;
+    .badge-standalone {
+      background-color: #d97706;
       color: #fff;
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: bold;
+      width: fit-content;
+      margin-bottom: 10px;
     }
 
-    .price-details {
-      font-size: 0.9rem;
-      color: #8a99ad;
-    }
-
-    .btn-buy {
+    .btn-steam {
       display: block;
       text-align: center;
-      background-color: #1f6feb;
-      color: #ffffff;
+      background-color: #21262d;
+      color: #ff9900;
+      border: 1px solid #ff9900;
       text-decoration: none;
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
 
-    .btn-buy:hover {
-      background-color: #388bfd;
+    .btn-steam:hover {
+      background-color: #ff9900;
+      color: #0d1117;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎯 Radar de Promoções & Descontos</h1>
-  <p class="subtitle">Escolha o nível de desconto e encontre as melhores pechinchas da internet!</p>
+  <h1>☣️ Radar de Standalones Grátis</h1>
+  <p class="subtitle">Jogos lendários e mods independentes que NÃO precisam do jogo base pra rodar!</p>
 
-  <div class="filter-container">
-    <label for="discount-select">Filtrar Desconto Mínimo:</label>
-    <select id="discount-select" onchange="buscarPromocoes()">
-      </select>
-  </div>
-
-  <div id="status" class="status">Carregando promoções... 🚀</div>
   <div id="games-grid" class="grid"></div>
 
   <script>
-    // Preenche o menu <select> de 100% até 5% descendo de 5 em 5
-    const selectElement = document.getElementById('discount-select');
-    for (let i = 100; i >= 5; i -= 5) {
-      const option = document.createElement('option');
-      option.value = i;
-      option.innerText = i === 100 ? '100% OFF (Grátis!)' : `${i}% OFF ou mais`;
-      selectElement.appendChild(option);
-    }
+    // Lista Curada dos Melhores Standalones Grátis da Steam
+    const standaloneGames = [
+      { id: 225840, name: "Sven Co-op", desc: "O pai dos standalones! Coop clássico baseado na engine GoldSrc de Half-Life." },
+      { id: 17520, name: "Synergy", desc: "Jogue a campanha completa de Half-Life 2 inteira em coop com amigos!" },
+      { id: 221910, name: "The Stanley Parable (Demo)", desc: "A famosa versão standalone original focada em escolhas e humor ácido." },
+      { id: 440, name: "Team Fortress 2", desc: "Nasceu como mod de Quake/HL, virou standalone e mudou os shooters pra sempre." },
+      { id: 238430, name: "Contagion / No More Room in Hell", desc: "NMH (AppID 224260) - Sobrevivência zumbi hardcore que era mod de HL2 e virou jogo solo." },
+      { id: 224260, name: "No More Room in Hell", desc: "Zumbi coop ultra realista, de graça e totalmente independente!" },
+      { id: 362890, name: "Black Mesa (Demo/Mod)", desc: "O remake supremo de Half-Life feito por fãs que virou standalone completo." },
+      { id: 1172470, name: "Apex Legends", desc: "Evolução standalone do universo de Titanfall focado em Battle Royale." }
+    ];
 
-    async function buscarPromocoes() {
-      const statusElement = document.getElementById('status');
+    function carregarStandalones() {
       const gridElement = document.getElementById('games-grid');
-      const descontoMinimo = selectElement.value;
 
-      gridElement.innerHTML = '';
-      statusElement.innerText = `Buscando jogos com no mínimo ${descontoMinimo}% de desconto... 🚀`;
+      standaloneGames.forEach(jogo => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.tabIndex = 0; // Navegação com controle da Smart TV
 
-      // API buscando jogos em promoção ordenados pelo maior desconto
-      const API_URL = `https://www.cheapshark.com/api/1.0/deals?onSale=1&sortBy=Savings&pageSize=30`;
+        // Capa automática gerada pela Steam via AppID
+        const imgUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${jogo.id}/header.jpg`;
+        const steamLink = `https://store.steampowered.com/app/${jogo.id}/`;
 
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-
-        // Filtra os jogos de acordo com o desconto selecionado de 5 em 5
-        const jogosFiltrados = data.filter(jogo => parseFloat(jogo.savings) >= parseFloat(descontoMinimo));
-
-        statusElement.innerText = '';
-
-        if (jogosFiltrados.length === 0) {
-          statusElement.innerText = `Nenhum jogo encontrado com ${descontoMinimo}% de desconto no momento!`;
-          return;
-        }
-
-        jogosFiltrados.forEach(jogo => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.tabIndex = 0;
-
-          const dealLink = `https://www.cheapshark.com/redirect?dealID=${jogo.dealID}`;
-          const porcentagem = Math.round(parseFloat(jogo.savings));
-          const precoNormal = `$${jogo.normalPrice}`;
-          const precoAtual = jogo.salePrice == '0.00' ? 'GRÁTIS' : `$${jogo.salePrice}`;
-
-          card.innerHTML = `
-            <img src="${jogo.thumb}" alt="${jogo.title}" onerror="this.src='https://via.placeholder.com/300x130?text=Promo%C3%A7%C3%A3o'">
-            <div class="card-content">
-              <div>
-                <div class="price-tag">
-                  <span class="badge-discount">-${porcentagem}%</span>
-                  <span class="price-details"><s>${precoNormal}</s> ➔ <strong>${precoAtual}</strong></span>
-                </div>
-                <div class="card-title">${jogo.title}</div>
-              </div>
-              <a href="${dealLink}" target="_blank" class="btn-buy">Ver Oferta 🚀</a>
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="${jogo.name}" onerror="this.src='https://via.placeholder.com/300x130?text=Standalone+Game'">
+          <div class="card-content">
+            <div>
+              <div class="badge-standalone">STANDALONE 100% GRÁTIS</div>
+              <div class="card-title">${jogo.name}</div>
+              <div class="card-desc">${jogo.desc}</div>
             </div>
-          `;
+            <a href="${steamLink}" target="_blank" class="btn-steam">Baixar na Steam 🚀</a>
+          </div>
+        `;
 
-          gridElement.appendChild(card);
-        });
-
-      } catch (error) {
-        console.error('Erro:', error);
-        statusElement.innerText = '❌ Erro ao carregar as promoções!';
-      }
+        gridElement.appendChild(card);
+      });
     }
 
-    // Carrega os jogos de 100% OFF assim que abre o site
-    buscarPromocoes();
+    carregarStandalones();
   </script>
 </body>
 </html>
