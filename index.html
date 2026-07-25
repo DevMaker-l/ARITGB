@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Radar de Jogos Grátis 🕹️</title>
+  <title>Radar Steam Free-To-Play 🕹️</title>
   <style>
     * {
       box-sizing: border-box;
@@ -24,8 +24,8 @@
 
     h1 {
       margin-bottom: 8px;
-      color: #00ffcc;
-      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+      color: #66c0f4; /* Azul clássico Steam */
+      text-shadow: 0 0 10px rgba(102, 192, 244, 0.5);
     }
 
     p.subtitle {
@@ -49,8 +49,8 @@
     }
 
     .card {
-      background-color: #161b22;
-      border: 1px solid #30363d;
+      background-color: #171a21;
+      border: 1px solid #2a475e;
       border-radius: 12px;
       overflow: hidden;
       display: flex;
@@ -60,15 +60,15 @@
 
     .card:hover, .card:focus {
       transform: translateY(-5px);
-      border-color: #00ffcc;
+      border-color: #66c0f4;
       outline: none;
     }
 
     .card img {
       width: 100%;
-      height: 140px;
+      height: 130px;
       object-fit: cover;
-      background-color: #0d1117;
+      background-color: #0b0e14;
     }
 
     .card-content {
@@ -83,10 +83,11 @@
       font-size: 1rem;
       font-weight: bold;
       margin-bottom: 10px;
+      color: #c6d4df;
     }
 
-    .badge-free {
-      background-color: #238636;
+    .badge-f2p {
+      background-color: #47b147;
       color: #fff;
       padding: 4px 8px;
       border-radius: 6px;
@@ -96,80 +97,79 @@
       margin-bottom: 12px;
     }
 
-    .btn-buy {
+    .btn-steam {
       display: block;
       text-align: center;
-      background-color: #1f6feb;
-      color: #ffffff;
+      background-color: #214b6b;
+      color: #66c0f4;
+      border: 1px solid #66c0f4;
       text-decoration: none;
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
 
-    .btn-buy:hover {
-      background-color: #388bfd;
+    .btn-steam:hover {
+      background-color: #66c0f4;
+      color: #0b0e14;
     }
   </style>
 </head>
 <body>
 
-  <h1>📡 Radar de Jogos Grátis</h1>
-  <p class="subtitle">Buscando ofertas de 100% OFF na Steam e Lojas Parceiras em tempo real!</p>
+  <h1>🎮 Radar Steam Free-To-Play</h1>
+  <p class="subtitle">Lista dos melhores jogos 100% gratuitos para jogar na Steam!</p>
 
-  <div id="status" class="status">Carregando jogos... 🚀</div>
+  <div id="status" class="status">Carregando lista da Steam... 🚀</div>
   <div id="games-grid" class="grid"></div>
 
   <script>
-    // URL da API da CheapShark buscando ofertas com 100% de desconto
-    const API_URL = 'https://www.cheapshark.com/api/1.0/deals?onSale=1&upperPrice=0';
+    // Lista de AppIDs dos maiores e melhores Free-to-Play da Steam
+    const f2pGames = [
+      { id: 730, name: "Counter-Strike 2" },
+      { id: 570, name: "Dota 2" },
+      { id: 1172470, name: "Apex Legends" },
+      { id: 578080, name: "PUBG: BATTLEGROUNDS" },
+      { id: 230410, name: "Warframe" },
+      { id: 1085660, name: "Destiny 2" },
+      { id: 440, name: "Team Fortress 2" },
+      { id: 304930, name: "Unturned" },
+      { id: 252490, name: "Rust (Trial)" },
+      { id: 1938090, name: "Call of Duty: Warzone" }
+    ];
 
-    async function buscarJogosGratis() {
+    function carregarJogosSteam() {
       const statusElement = document.getElementById('status');
       const gridElement = document.getElementById('games-grid');
 
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+      statusElement.innerText = '';
 
-        statusElement.innerText = '';
+      f2pGames.forEach(jogo => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.tabIndex = 0; // Suporte a controle/teclado para TV
 
-        if (!data || data.length === 0) {
-          statusElement.innerText = 'Nenhum jogo 100% grátis encontrado no momento. Volte mais tarde!';
-          return;
-        }
+        // A Steam gera capas automáticas por este link oficial usando o ID do jogo
+        const imgUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${jogo.id}/header.jpg`;
+        const steamLink = `https://store.steampowered.com/app/${jogo.id}/`;
 
-        data.forEach(jogo => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.tabIndex = 0; // Permite focar com as setinhas do controle/teclado
-
-          // Link para resgatar na CheapShark (redireciona para a loja oficial)
-          const dealLink = `https://www.cheapshark.com/redirect?dealID=${jogo.dealID}`;
-
-          card.innerHTML = `
-            <img src="${jogo.thumb}" alt="${jogo.title}" onerror="this.src='https://via.placeholder.com/300x140?text=Sem+Imagem'">
-            <div class="card-content">
-              <div>
-                <div class="badge-free">100% GRÁTIS</div>
-                <div class="card-title">${jogo.title}</div>
-              </div>
-              <a href="${dealLink}" target="_blank" class="btn-buy">Resgatar Jogo 🚀</a>
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="${jogo.name}" onerror="this.src='https://via.placeholder.com/300x130?text=Steam+Game'">
+          <div class="card-content">
+            <div>
+              <div class="badge-f2p">FREE-TO-PLAY</div>
+              <div class="card-title">${jogo.name}</div>
             </div>
-          `;
+            <a href="${steamLink}" target="_blank" class="btn-steam">Ver na Steam 🚀</a>
+          </div>
+        `;
 
-          gridElement.appendChild(card);
-        });
-
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        statusElement.innerText = '❌ Erro ao carregar as ofertas. Verifique a conexão!';
-      }
+        gridElement.appendChild(card);
+      });
     }
 
-    // Executa a busca ao carregar a página
-    buscarJogosGratis();
+    carregarJogosSteam();
   </script>
 </body>
 </html>
