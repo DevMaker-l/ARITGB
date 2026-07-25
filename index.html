@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Radar de Jogos Standalone 🕹️</title>
+  <title>Central Gigante Free-To-Play 🕹️</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,7 +12,7 @@
     }
 
     body {
-      background-color: #0d1117;
+      background-color: #0b0e14;
       color: #ffffff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
@@ -24,15 +24,21 @@
 
     h1 {
       margin-bottom: 8px;
-      color: #ff9900; /* Laranja estilo Half-Life / Sven Co-op */
-      text-shadow: 0 0 12px rgba(255, 153, 0, 0.5);
+      color: #00ffcc;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
     }
 
     p.subtitle {
-      color: #8b949e;
-      margin-bottom: 24px;
+      color: #8a99ad;
+      margin-bottom: 20px;
       font-size: 0.95rem;
       text-align: center;
+    }
+
+    .status {
+      margin: 20px 0;
+      font-size: 1.1rem;
+      color: #ffcc00;
     }
 
     .grid {
@@ -40,7 +46,7 @@
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 20px;
       width: 100%;
-      max-width: 1000px;
+      max-width: 1200px;
     }
 
     .card {
@@ -55,13 +61,13 @@
 
     .card:hover, .card:focus {
       transform: translateY(-5px);
-      border-color: #ff9900;
+      border-color: #00ffcc;
       outline: none;
     }
 
     .card img {
       width: 100%;
-      height: 130px;
+      height: 140px;
       object-fit: cover;
       background-color: #0d1117;
     }
@@ -75,98 +81,114 @@
     }
 
     .card-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: bold;
       margin-bottom: 6px;
-      color: #f0f6fc;
+      color: #ffffff;
     }
 
     .card-desc {
-      font-size: 0.85rem;
-      color: #8b949e;
+      font-size: 0.8rem;
+      color: #8a99ad;
       margin-bottom: 12px;
-      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    .badge-standalone {
-      background-color: #d97706;
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
+    .tags {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background-color: #21262d;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
       font-weight: bold;
-      width: fit-content;
-      margin-bottom: 10px;
     }
 
-    .btn-steam {
+    .btn-play {
       display: block;
       text-align: center;
-      background-color: #21262d;
-      color: #ff9900;
-      border: 1px solid #ff9900;
+      background-color: #238636;
+      color: #ffffff;
       text-decoration: none;
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s;
     }
 
-    .btn-steam:hover {
-      background-color: #ff9900;
-      color: #0d1117;
+    .btn-play:hover {
+      background-color: #2ea043;
     }
   </style>
 </head>
 <body>
 
-  <h1>☣️ Radar de Standalones Grátis</h1>
-  <p class="subtitle">Jogos lendários e mods independentes que NÃO precisam do jogo base pra rodar!</p>
+  <h1>🚀 Central Gigante de Jogos Grátis</h1>
+  <p class="subtitle">Carregando o catálogo completo de jogos Free-To-Play pra você rechear a biblioteca!</p>
 
+  <div id="status" class="status">Buscando catálogo gigante... ⏳</div>
   <div id="games-grid" class="grid"></div>
 
   <script>
-    // Lista Curada dos Melhores Standalones Grátis da Steam
-    const standaloneGames = [
-      { id: 225840, name: "Sven Co-op", desc: "O pai dos standalones! Coop clássico baseado na engine GoldSrc de Half-Life." },
-      { id: 17520, name: "Synergy", desc: "Jogue a campanha completa de Half-Life 2 inteira em coop com amigos!" },
-      { id: 221910, name: "The Stanley Parable (Demo)", desc: "A famosa versão standalone original focada em escolhas e humor ácido." },
-      { id: 440, name: "Team Fortress 2", desc: "Nasceu como mod de Quake/HL, virou standalone e mudou os shooters pra sempre." },
-      { id: 238430, name: "Contagion / No More Room in Hell", desc: "NMH (AppID 224260) - Sobrevivência zumbi hardcore que era mod de HL2 e virou jogo solo." },
-      { id: 224260, name: "No More Room in Hell", desc: "Zumbi coop ultra realista, de graça e totalmente independente!" },
-      { id: 362890, name: "Black Mesa (Demo/Mod)", desc: "O remake supremo de Half-Life feito por fãs que virou standalone completo." },
-      { id: 1172470, name: "Apex Legends", desc: "Evolução standalone do universo de Titanfall focado em Battle Royale." }
-    ];
+    // Usando um proxy CORS seguro para puxar a API do FreeToGame sem bloqueios
+    const API_URL = 'https://corsproxy.io/?https://www.freetogame.com/api/games';
 
-    function carregarStandalones() {
+    async function carregarTodosOsJogos() {
+      const statusElement = document.getElementById('status');
       const gridElement = document.getElementById('games-grid');
 
-      standaloneGames.forEach(jogo => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.tabIndex = 0; // Navegação com controle da Smart TV
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-        // Capa automática gerada pela Steam via AppID
-        const imgUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${jogo.id}/header.jpg`;
-        const steamLink = `https://store.steampowered.com/app/${jogo.id}/`;
+        statusElement.innerText = '';
 
-        card.innerHTML = `
-          <img src="${imgUrl}" alt="${jogo.name}" onerror="this.src='https://via.placeholder.com/300x130?text=Standalone+Game'">
-          <div class="card-content">
-            <div>
-              <div class="badge-standalone">STANDALONE 100% GRÁTIS</div>
-              <div class="card-title">${jogo.name}</div>
-              <div class="card-desc">${jogo.desc}</div>
+        if (!data || data.length === 0) {
+          statusElement.innerText = 'Nenhum jogo encontrado!';
+          return;
+        }
+
+        // Exibe os jogos do catálogo automaticamente
+        data.forEach(jogo => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.tabIndex = 0; // Suporte para Smart TV/Teclado
+
+          card.innerHTML = `
+            <img src="${jogo.thumbnail}" alt="${jogo.title}" onerror="this.src='https://via.placeholder.com/300x140?text=Jogo+Gr%C3%A1tis'">
+            <div class="card-content">
+              <div>
+                <div class="tags">
+                  <span class="badge">${jogo.genre}</span>
+                  <span class="badge">${jogo.platform.includes('PC') ? 'PC' : 'BROWSER'}</span>
+                </div>
+                <div class="card-title">${jogo.title}</div>
+                <div class="card-desc">${jogo.short_description}</div>
+              </div>
+              <a href="${jogo.game_url}" target="_blank" class="btn-play">Resgatar / Jogar 🎮</a>
             </div>
-            <a href="${steamLink}" target="_blank" class="btn-steam">Baixar na Steam 🚀</a>
-          </div>
-        `;
+          `;
 
-        gridElement.appendChild(card);
-      });
+          gridElement.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error('Erro ao buscar jogos:', error);
+        statusElement.innerText = '❌ Erro ao carregar a lista gigante. Tente recarregar a página!';
+      }
     }
 
-    carregarStandalones();
+    carregarTodosOsJogos();
   </script>
 </body>
 </html>
