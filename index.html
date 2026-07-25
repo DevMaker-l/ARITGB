@@ -1,80 +1,175 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Info TV - Diagnóstico Ultra Leve</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radar de Jogos Grátis 🕹️</title>
   <style>
-    body {
-      background-color: #0d0f12;
-      color: #00ffff;
-      font-family: Arial, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding: 40px;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0b0e14;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 80vh;
+      min-height: 100vh;
     }
+
     h1 {
-      font-size: 2.5rem;
-      color: #ffd700;
-      margin-bottom: 30px;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      margin-bottom: 8px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
     }
+
+    p.subtitle {
+      color: #8a99ad;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    .status {
+      margin: 20px 0;
+      font-size: 1.1rem;
+      color: #ffcc00;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
     .card {
-      background: #161b22;
-      border: 2px solid #00ffff;
-      border-radius: 15px;
-      padding: 25px;
-      width: 80%;
-      max-width: 800px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
     }
-    .info-item {
-      font-size: 1.4rem;
-      margin: 15px 0;
-      border-bottom: 1px solid #30363d;
-      padding-bottom: 10px;
-      color: #ffffff;
+
+    .card:hover, .card:focus {
+      transform: translateY(-5px);
+      border-color: #00ffcc;
+      outline: none;
     }
-    .info-item span {
-      color: #00ffff;
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background-color: #0d1117;
+    }
+
+    .card-content {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 1rem;
       font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .badge-free {
+      background-color: #238636;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      width: fit-content;
+      margin-bottom: 12px;
+    }
+
+    .btn-buy {
+      display: block;
+      text-align: center;
+      background-color: #1f6feb;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .btn-buy:hover {
+      background-color: #388bfd;
     }
   </style>
 </head>
 <body>
 
-  <h1>📺 Raio-X da Smart TV</h1>
+  <h1>📡 Radar de Jogos Grátis</h1>
+  <p class="subtitle">Buscando ofertas de 100% OFF na Steam e Lojas Parceiras em tempo real!</p>
 
-  <div class="card">
-    <div class="info-item">Sistema/Navegador: <span id="so">Detectando...</span></div>
-    <div class="info-item">Resolução da Tela: <span id="res">Detectando...</span></div>
-    <div class="info-item">Núcleos de Processador (CPU): <span id="cpu">Detectando...</span></div>
-    <div class="info-item">Status da Conexão: <span id="rede">Detectando...</span></div>
-    <div class="info-item">Linguagem do Sistema: <span id="lang">Detectando...</span></div>
-  </div>
+  <div id="status" class="status">Carregando jogos... 🚀</div>
+  <div id="games-grid" class="grid"></div>
 
   <script>
-    // Pega informações do navegador da TV
-    const ua = navigator.userAgent;
-    let sistema = "Desconhecido / Genérico";
+    // URL da API da CheapShark buscando ofertas com 100% de desconto
+    const API_URL = 'https://www.cheapshark.com/api/1.0/deals?onSale=1&upperPrice=0';
 
-    if (ua.includes("Tizen")) sistema = "Samsung Smart TV (Tizen)";
-    else if (ua.includes("Web0S") || ua.includes("webOS")) sistema = "LG Smart TV (webOS)";
-    else if (ua.includes("Android")) sistema = "Android TV / Google TV";
-    else if (ua.includes("AFT")) sistema = "Amazon Fire TV";
-    else if (ua.includes("Roku")) sistema = "Roku TV";
-    else sistema = "Navegador Padrão (" + navigator.platform + ")";
+    async function buscarJogosGratis() {
+      const statusElement = document.getElementById('status');
+      const gridElement = document.getElementById('games-grid');
 
-    document.getElementById("so").innerText = sistema;
-    document.getElementById("res").innerText = window.screen.width + " x " + window.screen.height + " px";
-    document.getElementById("cpu").innerText = (navigator.hardwareConcurrency || "Não informado") + " núcleos";
-    document.getElementById("rede").innerText = navigator.onLine ? "Conectado à Internet 🟢" : "Offline 🔴";
-    document.getElementById("lang").innerText = navigator.language.toUpperCase();
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        statusElement.innerText = '';
+
+        if (!data || data.length === 0) {
+          statusElement.innerText = 'Nenhum jogo 100% grátis encontrado no momento. Volte mais tarde!';
+          return;
+        }
+
+        data.forEach(jogo => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.tabIndex = 0; // Permite focar com as setinhas do controle/teclado
+
+          // Link para resgatar na CheapShark (redireciona para a loja oficial)
+          const dealLink = `https://www.cheapshark.com/redirect?dealID=${jogo.dealID}`;
+
+          card.innerHTML = `
+            <img src="${jogo.thumb}" alt="${jogo.title}" onerror="this.src='https://via.placeholder.com/300x140?text=Sem+Imagem'">
+            <div class="card-content">
+              <div>
+                <div class="badge-free">100% GRÁTIS</div>
+                <div class="card-title">${jogo.title}</div>
+              </div>
+              <a href="${dealLink}" target="_blank" class="btn-buy">Resgatar Jogo 🚀</a>
+            </div>
+          `;
+
+          gridElement.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        statusElement.innerText = '❌ Erro ao carregar as ofertas. Verifique a conexão!';
+      }
+    }
+
+    // Executa a busca ao carregar a página
+    buscarJogosGratis();
   </script>
-
 </body>
 </html>
