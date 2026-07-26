@@ -2,85 +2,56 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspecionador de ZIP - Hub</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <title>Detector de Emuladores Mobile</title>
     <style>
-        body {
-            font-family: monospace;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            padding: 20px;
-            margin: 0;
-        }
-        h1 { color: #58a6ff; }
-        .upload-box {
-            border: 2px dashed #30363d;
-            padding: 20px;
-            border-radius: 6px;
-            text-align: center;
-            background-color: #161b22;
-            margin-bottom: 15px;
-        }
-        input[type="file"] { color: #58a6ff; }
-        .resultado-box {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 5px; color: #79c0ff; }
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        .box { border: 1px solid #0f0; padding: 15px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>📦 Inspecionador de Arquivos .ZIP</h1>
-    <p>Jogue ou selecione um arquivo .zip para ver a estrutura interna de arquivos:</p>
-
-    <div class="upload-box">
-        <input type="file" id="arquivoZip" accept=".zip" onchange="lerZip(event)">
-    </div>
-
-    <h3>Estrutura Encontrada:</h3>
-    <div id="saidaResultado" class="resultado-box">Nenhum arquivo carregado ainda...</div>
+    <h1>🔍 Verificador de Compatibilidade Mobile</h1>
+    <div class="box" id="resultado">Analisando seu hardware...</div>
 
     <script>
-        async function lerZip(event) {
-            let arquivo = event.target.files[0];
-            let saida = document.getElementById('saidaResultado');
-
-            if (!arquivo) return;
-
-            saida.innerText = "Lendo e descompactando o arquivo... Aguarde!";
-
-            try {
-                let jszip = new JSZip();
-                let conteudoZip = await jszip.loadAsync(arquivo);
-                
-                let listaHTML = "--- ARQUIVOS DENTRO DO ZIP ---\n\n<ul>";
-                let totalArquivos = 0;
-
-                // Percorre todos os arquivos de dentro do zip
-                let promessas = [];
-                conteudoZip.forEach((caminhoRelativo, arquivoNoZip) => {
-                    totalArquivos++;
-                    listaHTML += `<li>📁 ${caminhoRelativo} ${arquivoNoZip.dir ? '(Pasta)' : ''}</li>`;
-                });
-
-                listaHTML += "</ul>\n<br>Total de itens encontrados: " + totalArquivos;
-                saida.innerHTML = listaHTML;
-
-            } catch (erro) {
-                saida.innerText = "Erro ao ler o arquivo ZIP. Certifique-se de que é um arquivo válido!";
-                console.error(erro);
+        function analisarDispositivo() {
+            const ua = navigator.userAgent;
+            const divResultado = document.getElementById('resultado');
+            
+            // Detectando se é Android
+            let isAndroid = /Android/.test(ua);
+            let androidVersion = "Desconhecida";
+            
+            if (isAndroid) {
+                let match = ua.match(/Android\s([0-9\.]*)/);
+                if (match) {
+                    androidVersion = match[1];
+                }
             }
+
+            // Lógica de recomendação baseada no sistema
+            let recomendacao = "";
+            let majorVersion = parseInt(androidVersion);
+
+            if (!isAndroid) {
+                recomendacao = "⚠️ Este site foi feito para dispositivos Android!";
+            } else if (majorVersion < 10) {
+                recomendacao = "🔴 Versão antiga do Android. Sugestão: Forks leves de emuladores 2D ou PPSSPP.";
+            } else if (majorVersion >= 10 && majorVersion < 12) {
+                recomendacao = "🟡 Android intermediário. Compatível com Winlator (versões otimizadas) e GameHub, dependendo do seu processador.";
+            } else {
+                recomendacao = "🟢 Android moderno! Alta compatibilidade com Winlator, GameHub e emuladores pesados.";
+            }
+
+            divResultado.innerHTML = `
+                <strong>User-Agent:</strong> ${ua} <br><br>
+                <strong>Sistema:</strong> ${isAndroid ? 'Android ' + androidVersion : 'Outro sistema'} <br><br>
+                <strong>Diagnóstico de Emuladores:</strong><br>${recomendacao}
+            `;
         }
+
+        analisarDispositivo();
     </script>
+
 </body>
 </html>
