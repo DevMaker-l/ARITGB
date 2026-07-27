@@ -2,56 +2,101 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Detector de Emuladores Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 3D Block Engine</title>
     <style>
-        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
-        .box { border: 1px solid #0f0; padding: 15px; margin-top: 10px; }
+        body { margin: 0; overflow: hidden; background: #111; }
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <h1>🔍 Verificador de Compatibilidade Mobile</h1>
-    <div class="box" id="resultado">Analisando seu hardware...</div>
+    <div id="ui">
+        <button onclick="adicionarBloco()">+ Adicionar Bloco</button>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <script>
-        function analisarDispositivo() {
-            const ua = navigator.userAgent;
-            const divResultado = document.getElementById('resultado');
+        // 1. Configuração Básica da Cena 3D
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Luz para iluminar os blocos
+        const luz = new THREE.DirectionalLight(0xffffff, 1);
+        luz.position.set(5, 10, 7);
+        scene.add(luz);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        // Array para guardar os blocos criados
+        const blocos = [];
+
+        // 2. Função que cria e adiciona um bloco 3D na tela
+        function adicionarBloco() {
+            const geometria = new THREE.BoxGeometry(1, 1, 1);
             
-            // Detectando se é Android
-            let isAndroid = /Android/.test(ua);
-            let androidVersion = "Desconhecida";
+            // Cor aleatória para cada bloco adicionado
+            const corAleatoria = Math.random() * 0xffffff;
+            const material = new THREE.MeshStandardMaterial({ color: corAleatoria });
             
-            if (isAndroid) {
-                let match = ua.match(/Android\s([0-9\.]*)/);
-                if (match) {
-                    androidVersion = match[1];
-                }
-            }
+            const cubo = new THREE.Mesh(geometria, material);
+            
+            // Posiciona o bloco de forma espalhada aleatoriamente no centro
+            cubo.position.set(
+                (Math.random() - 0.5) * 6,
+                (Math.random() * 3),
+                (Math.random() - 0.5) * 6
+            );
 
-            // Lógica de recomendação baseada no sistema
-            let recomendacao = "";
-            let majorVersion = parseInt(androidVersion);
-
-            if (!isAndroid) {
-                recomendacao = "⚠️ Este site foi feito para dispositivos Android!";
-            } else if (majorVersion < 10) {
-                recomendacao = "🔴 Versão antiga do Android. Sugestão: Forks leves de emuladores 2D ou PPSSPP.";
-            } else if (majorVersion >= 10 && majorVersion < 12) {
-                recomendacao = "🟡 Android intermediário. Compatível com Winlator (versões otimizadas) e GameHub, dependendo do seu processador.";
-            } else {
-                recomendacao = "🟢 Android moderno! Alta compatibilidade com Winlator, GameHub e emuladores pesados.";
-            }
-
-            divResultado.innerHTML = `
-                <strong>User-Agent:</strong> ${ua} <br><br>
-                <strong>Sistema:</strong> ${isAndroid ? 'Android ' + androidVersion : 'Outro sistema'} <br><br>
-                <strong>Diagnóstico de Emuladores:</strong><br>${recomendacao}
-            `;
+            scene.add(cubo);
+            blocos.push(cubo);
         }
 
-        analisarDispositivo();
-    </script>
+        // 3. Game Loop (Atualiza a tela e gira os blocos levemente)
+        function animar() {
+            requestAnimationFrame(animar);
 
+            // Gira todos os blocos adicionados para dar vida à cena
+            blocos.forEach(bloco => {
+                bloco.rotation.x += 0.01;
+                bloco.rotation.y += 0.01;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animar();
+
+        // Ajusta a tela se o celular/janela mudar de tamanho
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
