@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web 3D Block Engine - Cores e Modelagem</title>
+    <title>Web 3D Block Engine - Completa</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
         #ui {
@@ -34,15 +34,18 @@
             color: white;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            font-size: 13px;
         }
         input[type="text"] {
-            padding: 6px;
+            padding: 5px;
             border-radius: 4px;
             border: 1px solid #555;
             background: #222;
             color: white;
+            width: 80px;
         }
+        label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
@@ -53,21 +56,19 @@
         <div class="control-group" id="transform-controls" style="display:none;">
             <span><strong>Editar Bloco:</strong></span>
             
-            <div>
-                <label>Cor (HEX): <input type="text" id="corHex" placeholder="#ff0000" oninput="mudarCor()"></label>
-            </div>
+            <label>Cor (HEX): <input type="text" id="corHex" placeholder="#ff0000" oninput="mudarCor()"></label>
 
-            <hr style="border-color: #444; margin: 2px 0;">
+            <hr style="border-color: #444; margin: 2px 0; width:100%;">
+            <span><em>Escala (Tamanho):</em></span>
+            <label>Largura (X): <input type="range" id="scaleX" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
+            <label>Altura (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
+            <label>Profundidade (Z): <input type="range" id="scaleZ" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
 
-            <div>
-                <label>Largura (X): <input type="range" id="scaleX" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-            </div>
-            <div>
-                <label>Altura (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-            </div>
-            <div>
-                <label>Profundidade (Z): <input type="range" id="scaleZ" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-            </div>
+            <hr style="border-color: #444; margin: 2px 0; width:100%;">
+            <span><em>Rotação (Ângulo):</em></span>
+            <label>Girar X: <input type="range" id="rotX" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
+            <label>Girar Y: <input type="range" id="rotY" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
+            <label>Girar Z: <input type="range" id="rotZ" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
         </div>
     </div>
 
@@ -94,15 +95,17 @@
 
         function adicionarBloco() {
             const geometria = new THREE.BoxGeometry(1, 1, 1);
-            const corInicial = 0x3498db; // Azul padrão inicial
-            const material = new THREE.MeshStandardMaterial({ color: corInicial });
+            const material = new THREE.MeshStandardMaterial({ color: 0x3498db });
             
             const cubo = new THREE.Mesh(geometria, material);
-            cubo.position.set(0, 0, 0);
+            cubo.position.set(
+                (Math.random() - 0.5) * 4,
+                0,
+                (Math.random() - 0.5) * 4
+            );
 
             scene.add(cubo);
             blocos.push(cubo);
-            
             selecionarBloco(cubo);
         }
 
@@ -110,32 +113,37 @@
             blocoSelecionado = bloco;
             document.getElementById('transform-controls').style.display = 'flex';
             
-            // Atualiza os inputs com os valores atuais do bloco selecionado
+            // Seta os inputs com os valores atuais do bloco
             document.getElementById('scaleX').value = bloco.scale.x;
             document.getElementById('scaleY').value = bloco.scale.y;
             document.getElementById('scaleZ').value = bloco.scale.z;
             
-            // Converte a cor atual do material para formato HEX para mostrar no input de texto
-            let corAtualHex = '#' + bloco.material.color.getHexString();
-            document.getElementById('corHex').value = corAtualHex;
+            document.getElementById('rotX').value = bloco.rotation.x;
+            document.getElementById('rotY').value = bloco.rotation.y;
+            document.getElementById('rotZ').value = bloco.rotation.z;
+
+            document.getElementById('corHex').value = '#' + bloco.material.color.getHexString();
         }
 
         function mudarDimensoes() {
             if (!blocoSelecionado) return;
-
             let sx = parseFloat(document.getElementById('scaleX').value);
             let sy = parseFloat(document.getElementById('scaleY').value);
             let sz = parseFloat(document.getElementById('scaleZ').value);
-
             blocoSelecionado.scale.set(sx, sy, sz);
+        }
+
+        function mudarRotacao() {
+            if (!blocoSelecionado) return;
+            let rx = parseFloat(document.getElementById('rotX').value);
+            let ry = parseFloat(document.getElementById('rotY').value);
+            let rz = parseFloat(document.getElementById('rotZ').value);
+            blocoSelecionado.rotation.set(rx, ry, rz);
         }
 
         function mudarCor() {
             if (!blocoSelecionado) return;
-
             let textoCor = document.getElementById('corHex').value;
-
-            // Valida se o texto digitado parece um código HEX válido (ex: #ff0000 ou #00f)
             if (textoCor.startsWith('#') && (textoCor.length === 4 || textoCor.length === 7)) {
                 blocoSelecionado.material.color.set(textoCor);
             }
