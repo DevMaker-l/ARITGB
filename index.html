@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Web 3D Block Engine - Câmera Mobile</title>
+    <title>Web 3D Block Engine - Com Botão Fechar</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; }
         #ui {
@@ -28,28 +28,32 @@
         }
         .btn-acao:active { transform: scale(0.95); }
 
-        /* Botão de Caminhar fixo na tela para mobile */
-        #btn-caminhar {
+        /* Base do Joystick Virtual */
+        #joystick-base {
             position: absolute;
             bottom: 30px;
             right: 30px;
             z-index: 10;
-            width: 75px;
-            height: 75px;
-            background: rgba(255, 71, 87, 0.9);
-            color: white;
-            border: none;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            user-select: none;
+            touch-action: none;
         }
-        #btn-caminhar:active { background: #ff2e43; transform: scale(0.92); }
+
+        #joystick-stick {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 71, 87, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            position: absolute;
+            transition: transform 0.05s linear;
+        }
 
         .control-group {
             background: rgba(0,0,0,0.85);
@@ -62,6 +66,27 @@
             font-size: 13px;
             width: 250px;
         }
+
+        /* Cabeçalho do painel com o botão X */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .btn-fechar {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-fechar:active { transform: scale(0.9); }
+
         input[type="text"], textarea {
             padding: 6px;
             border-radius: 4px;
@@ -81,7 +106,10 @@
         <button class="btn-acao" onclick="togglePainelScript()">Script</button>
         
         <div class="control-group" id="transform-controls" style="display:none;">
-            <span><strong>Editar Bloco:</strong></span>
+            <div class="panel-header">
+                <span><strong>Editar Bloco:</strong></span>
+                <button class="btn-fechar" onclick="fecharPainelBloco()">X</button>
+            </div>
             
             <label>Cor (HEX): <input type="text" id="corHex" placeholder="#ff0000" oninput="mudarCor()"></label>
 
@@ -99,14 +127,19 @@
         </div>
 
         <div class="control-group" id="script-controls" style="display:none;">
-            <span><strong>Console de Script:</strong></span>
+            <div class="panel-header">
+                <span><strong>Console de Script:</strong></span>
+                <button class="btn-fechar" onclick="togglePainelScript()">X</button>
+            </div>
             <span style="font-size: 11px; color: #aaa;">Controle o bloco selecionado (ex: <code>bloco.position.y += 0.5</code>)</span>
             <textarea id="codigoUsuario" placeholder="Digite seu código JS aqui..."></textarea>
             <button class="btn-acao" style="background: #2ed573; padding: 6px;" onclick="executarScript()">Executar Código</button>
         </div>
     </div>
 
-    <button id="btn-caminhar">ANDAR</button>
+    <div id="joystick-base">
+        <div id="joystick-stick"></div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
@@ -123,47 +156,82 @@
         scene.add(luz);
         scene.add(new THREE.AmbientLight(0x404040));
 
-        // Posição inicial da câmera em primeira pessoa
         camera.position.set(0, 1.6, 5);
         
         let targetRotationX = 0;
         let targetRotationY = 0;
-        let estaAndando = false;
 
-        // Controle de toque para olhar ao redor arrastando o dedo na tela
-        let tocando = false;
+        let moveX = 0;
+        let moveZ = 0;
+
+        let tocandoTela = false;
         let ultimoX = 0, ultimoY = 0;
 
         window.addEventListener('touchstart', (e) => {
-            if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('#ui')) return;
-            tocando = true;
+            if(e.target.closest('#ui') || e.target.closest('#joystick-base')) return;
+            tocandoTela = true;
             ultimoX = e.touches[0].clientX;
             ultimoY = e.touches[0].clientY;
         });
 
         window.addEventListener('touchmove', (e) => {
-            if (!tocando) return;
+            if (!tocandoTela) return;
             let deltaX = e.touches[0].clientX - ultimoX;
             let deltaY = e.touches[0].clientY - ultimoY;
 
             targetRotationY -= deltaX * 0.005;
             targetRotationX -= deltaY * 0.005;
-
-            // Limita olhar muito para cima/baixo
             targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
 
             ultimoX = e.touches[0].clientX;
             ultimoY = e.touches[0].clientY;
         });
 
-        window.addEventListener('touchend', () => { tocando = false; });
+        window.addEventListener('touchend', () => { tocandoTela = false; });
 
-        // Eventos do botão de caminhar segurado
-        const btnCaminhar = document.getElementById('btn-caminhar');
-        btnCaminhar.addEventListener('touchstart', () => { estaAndando = true; });
-        btnCaminhar.addEventListener('touchend', () => { estaAndando = false; });
-        btnCaminhar.addEventListener('mousedown', () => { estaAndando = true; });
-        btnCaminhar.addEventListener('mouseup', () => { estaAndando = false; });
+        // Lógica do Joystick Virtual Touch
+        const joystickBase = document.getElementById('joystick-base');
+        const joystickStick = document.getElementById('joystick-stick');
+        let joystickAtivo = false;
+        let centroX = 0, centroY = 0;
+
+        joystickBase.addEventListener('touchstart', (e) => {
+            joystickAtivo = true;
+            const rect = joystickBase.getBoundingClientRect();
+            centroX = rect.left + rect.width / 2;
+            centroY = rect.top + rect.height / 2;
+            atualizarJoystick(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!joystickAtivo) return;
+            for(let i=0; i<e.touches.length; i++) {
+                atualizarJoystick(e.touches[i].clientX, e.touches[i].clientY);
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            joystickAtivo = false;
+            moveX = 0;
+            moveZ = 0;
+            joystickStick.style.transform = `translate(0px, 0px)`;
+        });
+
+        function atualizarJoystick(clientX, clientY) {
+            let dx = clientX - centroX;
+            let dy = clientY - centroY;
+            let distancia = Math.sqrt(dx * dx + dy * dy);
+            let raioMaximo = 35;
+
+            if (distancia > raioMaximo) {
+                dx = (dx / distancia) * raioMaximo;
+                dy = (dy / distancia) * raioMaximo;
+            }
+
+            joystickStick.style.transform = `translate(${dx}px, ${dy}px)`;
+            moveX = dx / raioMaximo;
+            moveZ = dy / raioMaximo;
+        }
 
         let blocos = [];
         let blocoSelecionado = null;
@@ -173,8 +241,6 @@
             const material = new THREE.MeshStandardMaterial({ color: 0x3498db });
             
             const cubo = new THREE.Mesh(geometria, material);
-            
-            // Spawnado bem na frente da câmera
             let direcaoCamera = new THREE.Vector3();
             camera.getWorldDirection(direcaoCamera);
             cubo.position.copy(camera.position).add(direcaoCamera.multiplyScalar(3));
@@ -198,6 +264,11 @@
             document.getElementById('rotZ').value = bloco.rotation.z;
 
             document.getElementById('corHex').value = '#' + bloco.material.color.getHexString();
+        }
+
+        function fecharPainelBloco() {
+            document.getElementById('transform-controls').style.display = 'none';
+            blocoSelecionado = null;
         }
 
         function togglePainelScript() {
@@ -246,17 +317,19 @@
         function animar() {
             requestAnimationFrame(animar);
 
-            // Aplica a rotação suave na câmera baseada no dedo
             let euler = new THREE.Euler(targetRotationX, targetRotationY, 0, 'YXZ');
             camera.quaternion.setFromEuler(euler);
 
-            // Se o botão de caminhar estiver pressionado, move a câmera para frente
-            if (estaAndando) {
-                let direcao = new THREE.Vector3();
-                camera.getWorldDirection(direcao);
-                direcao.y = 0; // Trava no chão para não voar
-                direcao.normalize();
-                camera.position.addScaledVector(direcao, 0.08);
+            if (moveX !== 0 || moveZ !== 0) {
+                let direcaoFrente = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
+                let direcaoLado = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
+
+                let movimentoFinal = new THREE.Vector3()
+                    .addScaledVector(direcaoFrente, -moveZ)
+                    .addScaledVector(direcaoLado, moveX);
+
+                movimentoFinal.normalize();
+                camera.position.addScaledVector(movimentoFinal, 0.08);
             }
 
             renderer.render(scene, camera);
