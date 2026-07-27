@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web 3D Block Engine - Modelagem Básica</title>
+    <title>Web 3D Block Engine - Cores e Modelagem</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
         #ui {
@@ -28,13 +28,20 @@
         }
         button:active { transform: scale(0.95); }
         .control-group {
-            background: rgba(0,0,0,0.7);
-            padding: 10px;
+            background: rgba(0,0,0,0.85);
+            padding: 12px;
             border-radius: 8px;
             color: white;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
+        }
+        input[type="text"] {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #222;
+            color: white;
         }
     </style>
 </head>
@@ -44,7 +51,14 @@
         <button onclick="adicionarBloco()">+ Criar Bloco</button>
         
         <div class="control-group" id="transform-controls" style="display:none;">
-            <span>Modelar Bloco Selecionado:</span>
+            <span><strong>Editar Bloco:</strong></span>
+            
+            <div>
+                <label>Cor (HEX): <input type="text" id="corHex" placeholder="#ff0000" oninput="mudarCor()"></label>
+            </div>
+
+            <hr style="border-color: #444; margin: 2px 0;">
+
             <div>
                 <label>Largura (X): <input type="range" id="scaleX" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
             </div>
@@ -80,8 +94,8 @@
 
         function adicionarBloco() {
             const geometria = new THREE.BoxGeometry(1, 1, 1);
-            const corAleatoria = Math.random() * 0xffffff;
-            const material = new THREE.MeshStandardMaterial({ color: corAleatoria });
+            const corInicial = 0x3498db; // Azul padrão inicial
+            const material = new THREE.MeshStandardMaterial({ color: corInicial });
             
             const cubo = new THREE.Mesh(geometria, material);
             cubo.position.set(0, 0, 0);
@@ -89,7 +103,6 @@
             scene.add(cubo);
             blocos.push(cubo);
             
-            // Seleciona automaticamente o último bloco criado para modelar
             selecionarBloco(cubo);
         }
 
@@ -97,10 +110,14 @@
             blocoSelecionado = bloco;
             document.getElementById('transform-controls').style.display = 'flex';
             
-            // Seta os sliders com a escala atual do bloco
+            // Atualiza os inputs com os valores atuais do bloco selecionado
             document.getElementById('scaleX').value = bloco.scale.x;
             document.getElementById('scaleY').value = bloco.scale.y;
             document.getElementById('scaleZ').value = bloco.scale.z;
+            
+            // Converte a cor atual do material para formato HEX para mostrar no input de texto
+            let corAtualHex = '#' + bloco.material.color.getHexString();
+            document.getElementById('corHex').value = corAtualHex;
         }
 
         function mudarDimensoes() {
@@ -110,8 +127,18 @@
             let sy = parseFloat(document.getElementById('scaleY').value);
             let sz = parseFloat(document.getElementById('scaleZ').value);
 
-            // Modifica a escala do bloco em tempo real (esticando como se fosse massinha/bloco)
             blocoSelecionado.scale.set(sx, sy, sz);
+        }
+
+        function mudarCor() {
+            if (!blocoSelecionado) return;
+
+            let textoCor = document.getElementById('corHex').value;
+
+            // Valida se o texto digitado parece um código HEX válido (ex: #ff0000 ou #00f)
+            if (textoCor.startsWith('#') && (textoCor.length === 4 || textoCor.length === 7)) {
+                blocoSelecionado.material.color.set(textoCor);
+            }
         }
 
         function animar() {
