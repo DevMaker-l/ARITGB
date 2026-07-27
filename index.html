@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web 3D Block Engine - Completa</title>
+    <title>Web 3D Block Engine - Com Script</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
         #ui {
@@ -15,7 +15,8 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        button {
+        /* Botões padronizados no mesmo estilo */
+        .btn-acao {
             padding: 10px 16px;
             font-size: 14px;
             font-weight: bold;
@@ -26,7 +27,8 @@
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        button:active { transform: scale(0.95); }
+        .btn-acao:active { transform: scale(0.95); }
+
         .control-group {
             background: rgba(0,0,0,0.85);
             padding: 12px;
@@ -36,22 +38,25 @@
             flex-direction: column;
             gap: 6px;
             font-size: 13px;
+            width: 250px;
         }
-        input[type="text"] {
-            padding: 5px;
+        input[type="text"], textarea {
+            padding: 6px;
             border-radius: 4px;
             border: 1px solid #555;
             background: #222;
             color: white;
-            width: 80px;
+            font-family: monospace;
         }
+        textarea { resize: vertical; height: 60px; }
         label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <button onclick="adicionarBloco()">+ Criar Bloco</button>
+        <button class="btn-acao" onclick="adicionarBloco()">+ Criar Bloco</button>
+        <button class="btn-acao" onclick="togglePainelScript()">Script</button>
         
         <div class="control-group" id="transform-controls" style="display:none;">
             <span><strong>Editar Bloco:</strong></span>
@@ -69,6 +74,13 @@
             <label>Girar X: <input type="range" id="rotX" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
             <label>Girar Y: <input type="range" id="rotY" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
             <label>Girar Z: <input type="range" id="rotZ" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
+        </div>
+
+        <div class="control-group" id="script-controls" style="display:none;">
+            <span><strong>Console de Script:</strong></span>
+            <span style="font-size: 11px; color: #aaa;">Controle o bloco selecionado (ex: <code>bloco.position.y += 0.5</code>)</span>
+            <textarea id="codigoUsuario" placeholder="Digite seu código JS aqui..."></textarea>
+            <button class="btn-acao" style="background: #2ed573; padding: 6px;" onclick="executarScript()">Executar Código</button>
         </div>
     </div>
 
@@ -113,7 +125,6 @@
             blocoSelecionado = bloco;
             document.getElementById('transform-controls').style.display = 'flex';
             
-            // Seta os inputs com os valores atuais do bloco
             document.getElementById('scaleX').value = bloco.scale.x;
             document.getElementById('scaleY').value = bloco.scale.y;
             document.getElementById('scaleZ').value = bloco.scale.z;
@@ -123,6 +134,26 @@
             document.getElementById('rotZ').value = bloco.rotation.z;
 
             document.getElementById('corHex').value = '#' + bloco.material.color.getHexString();
+        }
+
+        function togglePainelScript() {
+            const painel = document.getElementById('script-controls');
+            painel.style.display = painel.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function executarScript() {
+            if (!blocoSelecionado) {
+                alert("Selecione um bloco primeiro!");
+                return;
+            }
+            let codigo = document.getElementById('codigoUsuario').value;
+            try {
+                // Cria um escopo onde a variável 'bloco' aponta para o objeto 3D selecionado
+                let funcaoDinamica = new Function('bloco', codigo);
+                funcaoDinamica(blocoSelecionado);
+            } catch (erro) {
+                alert("Erro no código: " + erro.message);
+            }
         }
 
         function mudarDimensoes() {
