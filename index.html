@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Web 3D Block Engine - Com Botão Fechar</title>
+    <title>Web 3D Block Engine - Híbrida & Otimizada</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; user-select: none; }
         #ui {
             position: absolute;
             top: 15px;
@@ -28,7 +28,6 @@
         }
         .btn-acao:active { transform: scale(0.95); }
 
-        /* Base do Joystick Virtual */
         #joystick-base {
             position: absolute;
             bottom: 30px;
@@ -67,7 +66,6 @@
             width: 250px;
         }
 
-        /* Cabeçalho do painel com o botão X */
         .panel-header {
             display: flex;
             justify-content: space-between;
@@ -97,6 +95,15 @@
         }
         textarea { resize: vertical; height: 60px; }
         label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        
+        #info-pc {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +138,7 @@
                 <span><strong>Console de Script:</strong></span>
                 <button class="btn-fechar" onclick="togglePainelScript()">X</button>
             </div>
-            <span style="font-size: 11px; color: #aaa;">Controle o bloco selecionado (ex: <code>bloco.position.y += 0.5</code>)</span>
+            <span style="font-size: 11px; color: #aaa;">Controle o bloco (ex: <code>bloco.position.y += 0.5</code>)</span>
             <textarea id="codigoUsuario" placeholder="Digite seu código JS aqui..."></textarea>
             <button class="btn-acao" style="background: #2ed573; padding: 6px;" onclick="executarScript()">Executar Código</button>
         </div>
@@ -141,14 +148,17 @@
         <div id="joystick-stick"></div>
     </div>
 
+    <div id="info-pc">PC: Use W, A, S, D para andar e Arraste o Mouse | Mobile: Use o Joystick e Toque</div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <script>
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
         
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Otimização de FPS para telas retina/mobile
         document.body.appendChild(renderer.domElement);
 
         const luz = new THREE.DirectionalLight(0xffffff, 1);
@@ -160,36 +170,67 @@
         
         let targetRotationX = 0;
         let targetRotationY = 0;
-
         let moveX = 0;
         let moveZ = 0;
 
-        let tocandoTela = false;
+        // Controle Teclado PC (W, A, S, D)
+        const teclas = { w: false, a: false, s: false, d: false };
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'w') teclas.w = true;
+            if (e.key.toLowerCase() === 's') teclas.s = true;
+            if (e.key.toLowerCase() === 'a') teclas.a = true;
+            if (e.key.toLowerCase() === 'd') teclas.d = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key.toLowerCase() === 'w') teclas.w = false;
+            if (e.key.toLowerCase() === 's') teclas.s = false;
+            if (e.key.toLowerCase() === 'a') teclas.a = false;
+            if (e.key.toLowerCase() === 'd') teclas.d = false;
+        });
+
+        // Controle de Mouse para PC e Touch para Mobile
+        let navegando = false;
         let ultimoX = 0, ultimoY = 0;
 
+        // Eventos Touch (Mobile)
         window.addEventListener('touchstart', (e) => {
             if(e.target.closest('#ui') || e.target.closest('#joystick-base')) return;
-            tocandoTela = true;
+            navegando = true;
             ultimoX = e.touches[0].clientX;
             ultimoY = e.touches[0].clientY;
         });
-
         window.addEventListener('touchmove', (e) => {
-            if (!tocandoTela) return;
-            let deltaX = e.touches[0].clientX - ultimoX;
-            let deltaY = e.touches[0].clientY - ultimoY;
+            if (!navegando) return;
+            processarMovimentoCamera(e.touches[0].clientX, e.touches[0].clientY);
+        });
+        window.addEventListener('touchend', () => { navegando = false; });
+
+        // Eventos Mouse (PC)
+        window.addEventListener('mousedown', (e) => {
+            if(e.target.closest('#ui') || e.target.closest('#joystick-base')) return;
+            navegando = true;
+            ultimoX = e.clientX;
+            ultimoY = e.clientY;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!navegando) return;
+            processarMovimentoCamera(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', () => { navegando = false; });
+
+        function processarMovimentoCamera(currX, currY) {
+            let deltaX = currX - ultimoX;
+            let deltaY = currY - ultimoY;
 
             targetRotationY -= deltaX * 0.005;
             targetRotationX -= deltaY * 0.005;
             targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
 
-            ultimoX = e.touches[0].clientX;
-            ultimoY = e.touches[0].clientY;
-        });
+            ultimoX = currX;
+            ultimoY = currY;
+        }
 
-        window.addEventListener('touchend', () => { tocandoTela = false; });
-
-        // Lógica do Joystick Virtual Touch
+        // Joystick Virtual Touch (Mobile)
         const joystickBase = document.getElementById('joystick-base');
         const joystickStick = document.getElementById('joystick-stick');
         let joystickAtivo = false;
@@ -320,13 +361,22 @@
             let euler = new THREE.Euler(targetRotationX, targetRotationY, 0, 'YXZ');
             camera.quaternion.setFromEuler(euler);
 
-            if (moveX !== 0 || moveZ !== 0) {
+            // Calcula valores finais combinando Joystick (Mobile) e Teclado (PC)
+            let finalX = moveX;
+            let finalZ = moveZ;
+
+            if (teclas.w) finalZ = -1;
+            if (teclas.s) finalZ = 1;
+            if (teclas.a) finalX = -1;
+            if (teclas.d) finalX = 1;
+
+            if (finalX !== 0 || finalZ !== 0) {
                 let direcaoFrente = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
                 let direcaoLado = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
 
                 let movimentoFinal = new THREE.Vector3()
-                    .addScaledVector(direcaoFrente, -moveZ)
-                    .addScaledVector(direcaoLado, moveX);
+                    .addScaledVector(direcaoFrente, -finalZ)
+                    .addScaledVector(direcaoLado, finalX);
 
                 movimentoFinal.normalize();
                 camera.position.addScaledVector(movimentoFinal, 0.08);
