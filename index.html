@@ -189,8 +189,7 @@
                 <span><strong>Projetos Salvos:</strong></span>
                 <button class="btn-fechar" onclick="togglePainelProjetos()">X</button>
             </div>
-            <div class="lista-projetos" id="listaProjetosContainer">
-                </div>
+            <div class="lista-projetos" id="listaProjetosContainer"></div>
         </div>
     </div>
 
@@ -416,7 +415,7 @@
             projetosSalvos[nome] = dadosMundo;
             localStorage.setItem('web3d_projetos', JSON.stringify(projetosSalvos));
 
-            alert(`Projeto "${nome}" salvo com sucesso!`);
+            alert("Projeto " + nome + " salvo com sucesso!");
             togglePainelSalvar();
         }
 
@@ -435,7 +434,7 @@
             chaves.forEach(nome => {
                 let div = document.createElement('div');
                 div.className = 'item-projeto';
-                div.innerHTML = `<span>📁 ${nome}</span> <span style="font-size:10px; color:#2ed573;">Carregar</span>`;
+                div.innerHTML = '<span>' + nome + '</span> <span style="font-size:10px; color:#2ed573;">Carregar</span>';
                 div.onclick = () => carregarProjeto(nome);
                 container.appendChild(div);
             });
@@ -447,18 +446,16 @@
 
             if (!dadosMundo) return;
 
-            // Remove blocos atuais da cena
             blocos.forEach(b => scene.remove(b));
             blocos = [];
             fecharPainelBloco();
 
-            // Reconstrói o mundo
             dadosMundo.forEach(dados => {
                 adicionarBloco(dados);
             });
 
             togglePainelProjetos();
-            alert(`Projeto "${nome}" carregado com sucesso!`);
+            alert("Projeto " + nome + " carregado com sucesso!");
         }
 
         function executarScript() {
@@ -504,4 +501,7 @@
 
         function aplicarTextura(event) {
             if (!blocoSelecionado) return;
-            const arquivo = event.target.fi
+            const arquivo = event.target.files[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
