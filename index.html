@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Web 3D Block Engine - Com Textura</title>
+    <title>Web 3D Block Engine - Save/Load</title>
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; user-select: none; }
         #ui {
@@ -99,6 +99,28 @@
         textarea { resize: vertical; height: 60px; }
         label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         
+        .lista-projetos {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        .item-projeto {
+            background: #333;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-projeto:hover { background: #444; }
+
         #info-pc {
             position: absolute;
             bottom: 15px;
@@ -114,6 +136,8 @@
     <div id="ui">
         <button class="btn-acao" onclick="adicionarBloco()">+ Criar Bloco</button>
         <button class="btn-acao" onclick="togglePainelScript()">Script</button>
+        <button class="btn-acao" style="background: #e67e22;" onclick="togglePainelSalvar()">Salvar</button>
+        <button class="btn-acao" style="background: #3498db;" onclick="togglePainelProjetos()">Projetos</button>
         
         <div class="control-group" id="transform-controls" style="display:none;">
             <div class="panel-header">
@@ -149,6 +173,24 @@
             <span style="font-size: 11px; color: #aaa;">Controle o bloco (ex: <code>bloco.position.y += 0.5</code>)</span>
             <textarea id="codigoUsuario" placeholder="Digite seu código JS aqui..."></textarea>
             <button class="btn-acao" style="background: #2ed573; padding: 6px;" onclick="executarScript()">Executar Código</button>
+        </div>
+
+        <div class="control-group" id="save-controls" style="display:none;">
+            <div class="panel-header">
+                <span><strong>Salvar Projeto:</strong></span>
+                <button class="btn-fechar" onclick="togglePainelSalvar()">X</button>
+            </div>
+            <label>Nome do Projeto: <input type="text" id="nomeProjetoInput" placeholder="Ex: Meu Mundo 1"></label>
+            <button class="btn-acao" style="background: #e67e22; padding: 6px;" onclick="salvarProjeto()">Confirmar</button>
+        </div>
+
+        <div class="control-group" id="projects-controls" style="display:none;">
+            <div class="panel-header">
+                <span><strong>Projetos Salvos:</strong></span>
+                <button class="btn-fechar" onclick="togglePainelProjetos()">X</button>
+            </div>
+            <div class="lista-projetos" id="listaProjetosContainer">
+                </div>
         </div>
     </div>
 
@@ -281,19 +323,36 @@
         let blocoSelecionado = null;
         const textureLoader = new THREE.TextureLoader();
 
-        function adicionarBloco() {
+        function adicionarBloco(dados = null) {
             const geometria = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshStandardMaterial({ color: 0x3498db });
+            const material = new THREE.MeshStandardMaterial({ 
+                color: dados ? dados.color : 0x3498db 
+            });
             
             const cubo = new THREE.Mesh(geometria, material);
-            let direcaoCamera = new THREE.Vector3();
-            camera.getWorldDirection(direcaoCamera);
-            cubo.position.copy(camera.position).add(direcaoCamera.multiplyScalar(3));
-            cubo.position.y = 0;
+
+            if (dados) {
+                cubo.position.set(dados.pos.x, dados.pos.y, dados.pos.z);
+                cubo.scale.set(dados.scale.x, dados.scale.y, dados.scale.z);
+                cubo.rotation.set(dados.rot.x, dados.rot.y, dados.rot.z);
+                if (dados.textureData) {
+                    textureLoader.load(dados.textureData, (textura) => {
+                        cubo.material.map = textura;
+                        cubo.material.color.set(0xffffff);
+                        cubo.material.needsUpdate = true;
+                    });
+                }
+            } else {
+                let direcaoCamera = new THREE.Vector3();
+                camera.getWorldDirection(direcaoCamera);
+                cubo.position.copy(camera.position).add(direcaoCamera.multiplyScalar(3));
+                cubo.position.y = 0;
+                selecionarBloco(cubo);
+            }
 
             scene.add(cubo);
             blocos.push(cubo);
-            selecionarBloco(cubo);
+            return cubo;
         }
 
         function selecionarBloco(bloco) {
@@ -309,7 +368,7 @@
             document.getElementById('rotZ').value = bloco.rotation.z;
 
             document.getElementById('corHex').value = '#' + bloco.material.color.getHexString();
-            document.getElementById('inputTextura').value = ''; // Limpa o seletor de arquivo visualmente
+            document.getElementById('inputTextura').value = '';
         }
 
         function fecharPainelBloco() {
@@ -320,6 +379,86 @@
         function togglePainelScript() {
             const painel = document.getElementById('script-controls');
             painel.style.display = painel.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function togglePainelSalvar() {
+            const painel = document.getElementById('save-controls');
+            painel.style.display = painel.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function togglePainelProjetos() {
+            const painel = document.getElementById('projects-controls');
+            if (painel.style.display === 'none') {
+                atualizarListaProjetos();
+                painel.style.display = 'flex';
+            } else {
+                painel.style.display = 'none';
+            }
+        }
+
+        function salvarProjeto() {
+            let nome = document.getElementById('nomeProjetoInput').value.trim();
+            if (!nome) {
+                alert("Digite um nome para o projeto!");
+                return;
+            }
+
+            let dadosMundo = blocos.map(b => ({
+                pos: { x: b.position.x, y: b.position.y, z: b.position.z },
+                scale: { x: b.scale.x, y: b.scale.y, z: b.scale.z },
+                rot: { x: b.rotation.x, y: b.rotation.y, z: b.rotation.z },
+                color: b.material.color.getHex(),
+                textureData: b.userData.textureData || null
+            }));
+
+            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
+            projetosSalvos[nome] = dadosMundo;
+            localStorage.setItem('web3d_projetos', JSON.stringify(projetosSalvos));
+
+            alert(`Projeto "${nome}" salvo com sucesso!`);
+            togglePainelSalvar();
+        }
+
+        function atualizarListaProjetos() {
+            let container = document.getElementById('listaProjetosContainer');
+            container.innerHTML = '';
+
+            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
+            let chaves = Object.keys(projetosSalvos);
+
+            if (chaves.length === 0) {
+                container.innerHTML = '<span style="color: #777; font-size:11px;">Nenhum projeto salvo.</span>';
+                return;
+            }
+
+            chaves.forEach(nome => {
+                let div = document.createElement('div');
+                div.className = 'item-projeto';
+                div.innerHTML = `<span>📁 ${nome}</span> <span style="font-size:10px; color:#2ed573;">Carregar</span>`;
+                div.onclick = () => carregarProjeto(nome);
+                container.appendChild(div);
+            });
+        }
+
+        function carregarProjeto(nome) {
+            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
+            let dadosMundo = projetosSalvos[nome];
+
+            if (!dadosMundo) return;
+
+            // Remove blocos atuais da cena
+            blocos.forEach(b => scene.remove(b));
+            blocos = [];
+            fecharPainelBloco();
+
+            // Reconstrói o mundo
+            dadosMundo.forEach(dados => {
+                let cubo = adicionarBloco(dados);
+                cubo.userData.textureData = dados.textureData;
+            });
+
+            togglePainelProjetos();
+            alert(`Projeto "${nome}" carregado com sucesso!`);
         }
 
         function executarScript() {
@@ -357,65 +496,12 @@
             let textoCor = document.getElementById('corHex').value;
             if (textoCor.startsWith('#') && (textoCor.length === 4 || textoCor.length === 7)) {
                 blocoSelecionado.material.color.set(textoCor);
-                blocoSelecionado.material.map = null; // Remove a textura se pintar por cima
+                blocoSelecionado.material.map = null;
+                blocoSelecionado.userData.textureData = null;
                 blocoSelecionado.material.needsUpdate = true;
             }
         }
 
-        // Função que aplica a foto escolhida como textura do bloco
         function aplicarTextura(event) {
             if (!blocoSelecionado) return;
-            const arquivo = event.target.files[0];
-            if (!arquivo) return;
-
-            const leitor = new FileReader();
-            leitor.onload = function(e) {
-                textureLoader.load(e.target.result, function(textura) {
-                    blocoSelecionado.material.map = textura;
-                    blocoSelecionado.material.color.set(0xffffff); // Reseta para branco para a foto aparecer com as cores reais
-                    blocoSelecionado.material.needsUpdate = true;
-                });
-            };
-            leitor.readAsDataURL(arquivo);
-        }
-
-        function animar() {
-            requestAnimationFrame(animar);
-
-            let euler = new THREE.Euler(targetRotationX, targetRotationY, 0, 'YXZ');
-            camera.quaternion.setFromEuler(euler);
-
-            let finalX = moveX;
-            let finalZ = moveZ;
-
-            if (teclas.w) finalZ = -1;
-            if (teclas.s) finalZ = 1;
-            if (teclas.a) finalX = -1;
-            if (teclas.d) finalX = 1;
-
-            if (finalX !== 0 || finalZ !== 0) {
-                let direcaoFrente = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
-                let direcaoLado = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
-
-                let movimentoFinal = new THREE.Vector3()
-                    .addScaledVector(direcaoFrente, -finalZ)
-                    .addScaledVector(direcaoLado, finalX);
-
-                movimentoFinal.normalize();
-                camera.position.addScaledVector(movimentoFinal, 0.08);
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        animar();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-    </html>
-    
+            const arquivo = event.target
