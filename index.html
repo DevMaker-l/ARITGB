@@ -339,6 +339,7 @@
                     textureLoader.load(dados.textureData, (textura) => {
                         cubo.material.map = textura;
                         cubo.material.color.set(0xffffff);
+                        cubo.userData.textureData = dados.textureData;
                         cubo.material.needsUpdate = true;
                     });
                 }
@@ -453,8 +454,7 @@
 
             // Reconstrói o mundo
             dadosMundo.forEach(dados => {
-                let cubo = adicionarBloco(dados);
-                cubo.userData.textureData = dados.textureData;
+                adicionarBloco(dados);
             });
 
             togglePainelProjetos();
@@ -504,4 +504,4 @@
 
         function aplicarTextura(event) {
             if (!blocoSelecionado) return;
-            const arquivo = event.target
+            const arquivo = event.target.fi
