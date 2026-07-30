@@ -1,507 +1,99 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Web 3D Block Engine - Save/Load</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; touch-action: none; user-select: none; }
-        #ui {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 10;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .btn-acao {
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .btn-acao:active { transform: scale(0.95); }
-
-        #joystick-base {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            z-index: 10;
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: none;
-        }
-
-        #joystick-stick {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 71, 87, 0.9);
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            position: absolute;
-            transition: transform 0.05s linear;
-        }
-
-        .control-group {
-            background: rgba(0,0,0,0.85);
-            padding: 12px;
-            border-radius: 8px;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 13px;
-            width: 250px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        .btn-fechar {
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .btn-fechar:active { transform: scale(0.9); }
-
-        input[type="text"], textarea, input[type="file"] {
-            padding: 6px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            background: #222;
-            color: white;
-            font-family: monospace;
-            font-size: 11px;
-        }
-        textarea { resize: vertical; height: 60px; }
-        label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        
-        .lista-projetos {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-height: 120px;
-            overflow-y: auto;
-            background: #1a1a1a;
-            padding: 6px;
-            border-radius: 4px;
-        }
-        .item-projeto {
-            background: #333;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .item-projeto:hover { background: #444; }
-
-        #info-pc {
-            position: absolute;
-            bottom: 15px;
-            left: 15px;
-            color: rgba(255,255,255,0.4);
-            font-size: 11px;
-            pointer-events: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFN Fila Tracker BR 🔥</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: #1a1a1a;
+      padding: 25px;
+      border-radius: 16px;
+      border: 2px solid #76b900;
+      box-shadow: 0 0 20px rgba(118, 185, 0, 0.3);
+    }
+    h1 { 
+      color: #76b900; 
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+    .sub { color: #aaa; margin-bottom: 20px; }
+    .servidor {
+      background: #222;
+      margin: 12px 0;
+      padding: 15px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.2s;
+    }
+    .servidor:hover { transform: scale(1.02); background: #2a2a2a; }
+    .bom { border-left: 6px solid #00ff00; }
+    .medio { border-left: 6px solid #ffaa00; }
+    .ruim { border-left: 6px solid #ff0000; }
+    button {
+      background: #76b900;
+      color: black;
+      border: none;
+      padding: 14px 24px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    button:hover { background: #8cff00; transform: scale(1.05); }
+    a { 
+      color: #000; 
+      background: #76b900;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none; 
+      font-weight: bold;
+    }
+    a:hover { background: #8cff00; }
+    .update { color: #888; font-size: 12px; margin-top: 20px; }
+    .dica { color: #76b900; font-weight: bold; }
+    .aviso { color: #666; font-size: 11px; }
+  </style>
 </head>
 <body>
-
-    <div id="ui">
-        <button class="btn-acao" onclick="adicionarBloco()">+ Criar Bloco</button>
-        <button class="btn-acao" onclick="togglePainelScript()">Script</button>
-        <button class="btn-acao" style="background: #e67e22;" onclick="togglePainelSalvar()">Salvar</button>
-        <button class="btn-acao" style="background: #3498db;" onclick="togglePainelProjetos()">Projetos</button>
-        
-        <div class="control-group" id="transform-controls" style="display:none;">
-            <div class="panel-header">
-                <span><strong>Editar Bloco:</strong></span>
-                <button class="btn-fechar" onclick="fecharPainelBloco()">X</button>
-            </div>
-            
-            <label>Cor (HEX): <input type="text" id="corHex" placeholder="#ff0000" oninput="mudarCor()"></label>
-            
-            <label style="flex-direction: column; align-items: flex-start; gap: 2px;">
-                <span>Textura (Foto):</span>
-                <input type="file" id="inputTextura" accept="image/*" onchange="aplicarTextura(event)">
-            </label>
-
-            <hr style="border-color: #444; margin: 2px 0; width:100%;">
-            <span><em>Escala (Tamanho):</em></span>
-            <label>Largura (X): <input type="range" id="scaleX" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-            <label>Altura (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-            <label>Profundidade (Z): <input type="range" id="scaleZ" min="0.5" max="5" step="0.1" value="1" oninput="mudarDimensoes()"></label>
-
-            <hr style="border-color: #444; margin: 2px 0; width:100%;">
-            <span><em>Rotação (Ângulo):</em></span>
-            <label>Girar X: <input type="range" id="rotX" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
-            <label>Girar Y: <input type="range" id="rotY" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
-            <label>Girar Z: <input type="range" id="rotZ" min="0" max="6.28" step="0.1" value="0" oninput="mudarRotacao()"></label>
-        </div>
-
-        <div class="control-group" id="script-controls" style="display:none;">
-            <div class="panel-header">
-                <span><strong>Console de Script:</strong></span>
-                <button class="btn-fechar" onclick="togglePainelScript()">X</button>
-            </div>
-            <span style="font-size: 11px; color: #aaa;">Controle o bloco (ex: <code>bloco.position.y += 0.5</code>)</span>
-            <textarea id="codigoUsuario" placeholder="Digite seu código JS aqui..."></textarea>
-            <button class="btn-acao" style="background: #2ed573; padding: 6px;" onclick="executarScript()">Executar Código</button>
-        </div>
-
-        <div class="control-group" id="save-controls" style="display:none;">
-            <div class="panel-header">
-                <span><strong>Salvar Projeto:</strong></span>
-                <button class="btn-fechar" onclick="togglePainelSalvar()">X</button>
-            </div>
-            <label>Nome do Projeto: <input type="text" id="nomeProjetoInput" placeholder="Ex: Meu Mundo 1"></label>
-            <button class="btn-acao" style="background: #e67e22; padding: 6px;" onclick="salvarProjeto()">Confirmar</button>
-        </div>
-
-        <div class="control-group" id="projects-controls" style="display:none;">
-            <div class="panel-header">
-                <span><strong>Projetos Salvos:</strong></span>
-                <button class="btn-fechar" onclick="togglePainelProjetos()">X</button>
-            </div>
-            <div class="lista-projetos" id="listaProjetosContainer"></div>
-        </div>
-    </div>
-
-    <div id="joystick-base">
-        <div id="joystick-stick"></div>
-    </div>
-
-    <div id="info-pc">PC: Use W, A, S, D para andar e Arraste o Mouse | Mobile: Use o Joystick e Toque</div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <div class="container">
+    <h1>🔥 GFN FILA TRACKER BR 🔥</h1>
+    <p class="sub">Chega de esperar 3h na fila. Veja onde tá menos lotado</p>
     
-    <script>
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
-        
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
+    <div id="servidores">Carregando...</div>
 
-        const luz = new THREE.DirectionalLight(0xffffff, 1);
-        luz.position.set(5, 10, 7);
-        scene.add(luz);
-        scene.add(new THREE.AmbientLight(0x404040));
+    <button onclick="reportarFila()">📢 Reportar minha fila</button>
+    
+    <p class="update">Última atualização: <span id="hora">--:--:--</span></p>
+    <p class="dica">💡 Dica: 6h-10h da manhã sempre tá vazio</p>
+    <p class="aviso">*Dados baseados em reports da comunidade. Nvidia não tem API oficial</p>
+  </div>
 
-        camera.position.set(0, 1.6, 5);
-        
-        let targetRotationX = 0;
-        let targetRotationY = 0;
-        let moveX = 0;
-        let moveZ = 0;
+  <script>
+    // DADOS INICIAIS - depois a gente troca por JSON
+    let servidores = [
+      { nome: "BR-SP", fila: 253, link: "https://play.geforcenow.com" },
+      { nome: "BR-RJ", fila: 120, link: "https://play.geforcenow.com" },
+      { nome: "US-EAST", fila: 42, link: "https://play.geforcenow.com" },
+      { nome: "US-WEST", fila: 310, link: "https://play.geforcenow.com" },
+      { nome: "EU-WEST", fila: 180, link: "https://play.geforcenow.com" }
+    ];
 
-        const teclas = { w: false, a: false, s: false, d: false };
-        window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'w') teclas.w = true;
-            if (e.key.toLowerCase() === 's') teclas.s = true;
-            if (e.key.toLowerCase() === 'a') teclas.a = true;
-            if (e.key.toLowerCase() === 'd') teclas.d = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (e.key.toLowerCase() === 'w') teclas.w = false;
-            if (e.key.toLowerCase() === 's') teclas.s = false;
-            if (e.key.toLowerCase() === 'a') teclas.a = false;
-            if (e.key.toLowerCase() === 'd') teclas.d = false;
-        });
-
-        let navegando = false;
-        let ultimoX = 0, ultimoY = 0;
-
-        window.addEventListener('touchstart', (e) => {
-            if(e.target.closest('#ui') || e.target.closest('#joystick-base')) return;
-            navegando = true;
-            ultimoX = e.touches[0].clientX;
-            ultimoY = e.touches[0].clientY;
-        });
-        window.addEventListener('touchmove', (e) => {
-            if (!navegando) return;
-            processarMovimentoCamera(e.touches[0].clientX, e.touches[0].clientY);
-        });
-        window.addEventListener('touchend', () => { navegando = false; });
-
-        window.addEventListener('mousedown', (e) => {
-            if(e.target.closest('#ui') || e.target.closest('#joystick-base')) return;
-            navegando = true;
-            ultimoX = e.clientX;
-            ultimoY = e.clientY;
-        });
-        window.addEventListener('mousemove', (e) => {
-            if (!navegando) return;
-            processarMovimentoCamera(e.clientX, e.clientY);
-        });
-        window.addEventListener('mouseup', () => { navegando = false; });
-
-        function processarMovimentoCamera(currX, currY) {
-            let deltaX = currX - ultimoX;
-            let deltaY = currY - ultimoY;
-
-            targetRotationY -= deltaX * 0.005;
-            targetRotationX -= deltaY * 0.005;
-            targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
-
-            ultimoX = currX;
-            ultimoY = currY;
-        }
-
-        const joystickBase = document.getElementById('joystick-base');
-        const joystickStick = document.getElementById('joystick-stick');
-        let joystickAtivo = false;
-        let centroX = 0, centroY = 0;
-
-        joystickBase.addEventListener('touchstart', (e) => {
-            joystickAtivo = true;
-            const rect = joystickBase.getBoundingClientRect();
-            centroX = rect.left + rect.width / 2;
-            centroY = rect.top + rect.height / 2;
-            atualizarJoystick(e.touches[0].clientX, e.touches[0].clientY);
-        });
-
-        window.addEventListener('touchmove', (e) => {
-            if (!joystickAtivo) return;
-            for(let i=0; i<e.touches.length; i++) {
-                atualizarJoystick(e.touches[i].clientX, e.touches[i].clientY);
-            }
-        });
-
-        window.addEventListener('touchend', () => {
-            joystickAtivo = false;
-            moveX = 0;
-            moveZ = 0;
-            joystickStick.style.transform = `translate(0px, 0px)`;
-        });
-
-        function atualizarJoystick(clientX, clientY) {
-            let dx = clientX - centroX;
-            let dy = clientY - centroY;
-            let distancia = Math.sqrt(dx * dx + dy * dy);
-            let raioMaximo = 35;
-
-            if (distancia > raioMaximo) {
-                dx = (dx / distancia) * raioMaximo;
-                dy = (dy / distancia) * raioMaximo;
-            }
-
-            joystickStick.style.transform = `translate(${dx}px, ${dy}px)`;
-            moveX = dx / raioMaximo;
-            moveZ = dy / raioMaximo;
-        }
-
-        let blocos = [];
-        let blocoSelecionado = null;
-        const textureLoader = new THREE.TextureLoader();
-
-        function adicionarBloco(dados = null) {
-            const geometria = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshStandardMaterial({ 
-                color: dados ? dados.color : 0x3498db 
-            });
-            
-            const cubo = new THREE.Mesh(geometria, material);
-
-            if (dados) {
-                cubo.position.set(dados.pos.x, dados.pos.y, dados.pos.z);
-                cubo.scale.set(dados.scale.x, dados.scale.y, dados.scale.z);
-                cubo.rotation.set(dados.rot.x, dados.rot.y, dados.rot.z);
-                if (dados.textureData) {
-                    textureLoader.load(dados.textureData, (textura) => {
-                        cubo.material.map = textura;
-                        cubo.material.color.set(0xffffff);
-                        cubo.userData.textureData = dados.textureData;
-                        cubo.material.needsUpdate = true;
-                    });
-                }
-            } else {
-                let direcaoCamera = new THREE.Vector3();
-                camera.getWorldDirection(direcaoCamera);
-                cubo.position.copy(camera.position).add(direcaoCamera.multiplyScalar(3));
-                cubo.position.y = 0;
-                selecionarBloco(cubo);
-            }
-
-            scene.add(cubo);
-            blocos.push(cubo);
-            return cubo;
-        }
-
-        function selecionarBloco(bloco) {
-            blocoSelecionado = bloco;
-            document.getElementById('transform-controls').style.display = 'flex';
-            
-            document.getElementById('scaleX').value = bloco.scale.x;
-            document.getElementById('scaleY').value = bloco.scale.y;
-            document.getElementById('scaleZ').value = bloco.scale.z;
-            
-            document.getElementById('rotX').value = bloco.rotation.x;
-            document.getElementById('rotY').value = bloco.rotation.y;
-            document.getElementById('rotZ').value = bloco.rotation.z;
-
-            document.getElementById('corHex').value = '#' + bloco.material.color.getHexString();
-            document.getElementById('inputTextura').value = '';
-        }
-
-        function fecharPainelBloco() {
-            document.getElementById('transform-controls').style.display = 'none';
-            blocoSelecionado = null;
-        }
-
-        function togglePainelScript() {
-            const painel = document.getElementById('script-controls');
-            painel.style.display = painel.style.display === 'none' ? 'flex' : 'none';
-        }
-
-        function togglePainelSalvar() {
-            const painel = document.getElementById('save-controls');
-            painel.style.display = painel.style.display === 'none' ? 'flex' : 'none';
-        }
-
-        function togglePainelProjetos() {
-            const painel = document.getElementById('projects-controls');
-            if (painel.style.display === 'none') {
-                atualizarListaProjetos();
-                painel.style.display = 'flex';
-            } else {
-                painel.style.display = 'none';
-            }
-        }
-
-        function salvarProjeto() {
-            let nome = document.getElementById('nomeProjetoInput').value.trim();
-            if (!nome) {
-                alert("Digite um nome para o projeto!");
-                return;
-            }
-
-            let dadosMundo = blocos.map(b => ({
-                pos: { x: b.position.x, y: b.position.y, z: b.position.z },
-                scale: { x: b.scale.x, y: b.scale.y, z: b.scale.z },
-                rot: { x: b.rotation.x, y: b.rotation.y, z: b.rotation.z },
-                color: b.material.color.getHex(),
-                textureData: b.userData.textureData || null
-            }));
-
-            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
-            projetosSalvos[nome] = dadosMundo;
-            localStorage.setItem('web3d_projetos', JSON.stringify(projetosSalvos));
-
-            alert("Projeto " + nome + " salvo com sucesso!");
-            togglePainelSalvar();
-        }
-
-        function atualizarListaProjetos() {
-            let container = document.getElementById('listaProjetosContainer');
-            container.innerHTML = '';
-
-            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
-            let chaves = Object.keys(projetosSalvos);
-
-            if (chaves.length === 0) {
-                container.innerHTML = '<span style="color: #777; font-size:11px;">Nenhum projeto salvo.</span>';
-                return;
-            }
-
-            chaves.forEach(nome => {
-                let div = document.createElement('div');
-                div.className = 'item-projeto';
-                div.innerHTML = '<span>' + nome + '</span> <span style="font-size:10px; color:#2ed573;">Carregar</span>';
-                div.onclick = () => carregarProjeto(nome);
-                container.appendChild(div);
-            });
-        }
-
-        function carregarProjeto(nome) {
-            let projetosSalvos = JSON.parse(localStorage.getItem('web3d_projetos') || '{}');
-            let dadosMundo = projetosSalvos[nome];
-
-            if (!dadosMundo) return;
-
-            blocos.forEach(b => scene.remove(b));
-            blocos = [];
-            fecharPainelBloco();
-
-            dadosMundo.forEach(dados => {
-                adicionarBloco(dados);
-            });
-
-            togglePainelProjetos();
-            alert("Projeto " + nome + " carregado com sucesso!");
-        }
-
-        function executarScript() {
-            if (!blocoSelecionado) {
-                alert("Selecione um bloco primeiro!");
-                return;
-            }
-            let codigo = document.getElementById('codigoUsuario').value;
-            try {
-                let funcaoDinamica = new Function('bloco', codigo);
-                funcaoDinamica(blocoSelecionado);
-            } catch (erro) {
-                alert("Erro no código: " + erro.message);
-            }
-        }
-
-        function mudarDimensoes() {
-            if (!blocoSelecionado) return;
-            let sx = parseFloat(document.getElementById('scaleX').value);
-            let sy = parseFloat(document.getElementById('scaleY').value);
-            let sz = parseFloat(document.getElementById('scaleZ').value);
-            blocoSelecionado.scale.set(sx, sy, sz);
-        }
-
-        function mudarRotacao() {
-            if (!blocoSelecionado) return;
-            let rx = parseFloat(document.getElementById('rotX').value);
-            let ry = parseFloat(document.getElementById('rotY').value);
-            let rz = parseFloat(document.getElementById('rotZ').value);
-            blocoSelecionado.rotation.set(rx, ry, rz);
-        }
-
-        function mudarCor() {
-            if (!blocoSelecionado) return;
-            let textoCor = document.getElementById('corHex').value;
-            if (textoCor.startsWith('#') && (textoCor.length === 4 || textoCor.length === 7)) {
-                blocoSelecionado.material.color.set(textoCor);
-                blocoSelecionado.material.map = null;
-                blocoSelecionado.userData.textureData = null;
-                blocoSelecionado.material.needsUpdate = true;
-            }
-        }
-
-        function aplicarTextura(event) {
-            if (!blocoSelecionado) return;
-            const arquivo = event.target.files[0];
-            if (!arquivo) return;
-
-            const leitor = new FileReader();
+    function getClasse(fila) {
+      if(fila < 50) return 'bom';
+      if(fila 
