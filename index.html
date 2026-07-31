@@ -1,67 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Aprenda Programando</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0a0f2c 0%, #1e3a8a 50%, #3b82f6 100%);
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      padding: 50px;
-    }
-    h1 {
-      text-shadow: 0 0 10px #3b82f6;
-    }
-    #editor {
-      width: 80%;
-      height: 200px;
-      background: #0a0f2c;
-      color: #00ff88;
-      border: 2px solid #3b82f6;
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    button {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 15px 40px;
-      font-size: 18px;
-      border-radius: 10px;
-      margin-top: 20px;
-      cursor: pointer;
-      box-shadow: 0 0 15px #3b82f6;
-    }
-    button:hover {
-      background: #2563eb;
-    }
-    #saida {
-      margin-top: 20px;
-      background: black;
-      padding: 20px;
-      border-radius: 10px;
-      min-height: 50px;
-    }
-  </style>
+<style>
+body {
+  background: blue;
+  color: white;
+  text-align: center;
+  padding: 100px;
+}
+button {
+  padding: 20px;
+  font-size: 20px;
+}
+</style>
 </head>
 <body>
-
-  <h1>🟦 AULA 1: print()</h1>
-  <p>Repete isso 3x e clica em Rodar</p>
-  
-  <textarea id="editor">print("Salve")
-print("Eu sou programador")
-print("E não pago curso")</textarea>
-  
-  <br>
-  <button onclick="rodar()">1 AULA - RODAR</button>
-  
-  <div id="saida"></div>
-
-  <script>
-    function rodar() {
-      let codigo = document.getElementById("editor").value;
-      let saida = document.getElementById("saida");
-      saida.innerHTML = codigo.replace(/print\(/g, "").replace(/\)/g
+  <h1>🟦 SITE AZUL FUNCIONANDO</h1>
+  <button onclick="alert('Clicou!')">1 AULA</button>
+</body>
+</html>
