@@ -1,99 +1,67 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GFN Fila Tracker BR 🔥</title>
+  <title>Aprenda Programando</title>
   <style>
-    * { box-sizing: border-box; }
     body {
-      background: #0a0a0a;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0a0f2c 0%, #1e3a8a 50%, #3b82f6 100%);
+      color: white;
+      font-family: Arial;
       text-align: center;
-      margin: 0;
-      padding: 20px;
+      padding: 50px;
     }
-    .container {
-      max-width: 650px;
-      margin: auto;
-      background: #1a1a1a;
-      padding: 25px;
-      border-radius: 16px;
-      border: 2px solid #76b900;
-      box-shadow: 0 0 20px rgba(118, 185, 0, 0.3);
+    h1 {
+      text-shadow: 0 0 10px #3b82f6;
     }
-    h1 { 
-      color: #76b900; 
-      margin: 0 0 10px 0;
-      font-size: 28px;
-    }
-    .sub { color: #aaa; margin-bottom: 20px; }
-    .servidor {
-      background: #222;
-      margin: 12px 0;
-      padding: 15px 20px;
+    #editor {
+      width: 80%;
+      height: 200px;
+      background: #0a0f2c;
+      color: #00ff88;
+      border: 2px solid #3b82f6;
       border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: 0.2s;
-    }
-    .servidor:hover { transform: scale(1.02); background: #2a2a2a; }
-    .bom { border-left: 6px solid #00ff00; }
-    .medio { border-left: 6px solid #ffaa00; }
-    .ruim { border-left: 6px solid #ff0000; }
-    button {
-      background: #76b900;
-      color: black;
-      border: none;
-      padding: 14px 24px;
+      padding: 10px;
       font-size: 16px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
       border-radius: 10px;
-      cursor: pointer;
       margin-top: 20px;
-      font-weight: bold;
-      transition: 0.2s;
+      cursor: pointer;
+      box-shadow: 0 0 15px #3b82f6;
     }
-    button:hover { background: #8cff00; transform: scale(1.05); }
-    a { 
-      color: #000; 
-      background: #76b900;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none; 
-      font-weight: bold;
+    button:hover {
+      background: #2563eb;
     }
-    a:hover { background: #8cff00; }
-    .update { color: #888; font-size: 12px; margin-top: 20px; }
-    .dica { color: #76b900; font-weight: bold; }
-    .aviso { color: #666; font-size: 11px; }
+    #saida {
+      margin-top: 20px;
+      background: black;
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 50px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🔥 GFN FILA TRACKER BR 🔥</h1>
-    <p class="sub">Chega de esperar 3h na fila. Veja onde tá menos lotado</p>
-    
-    <div id="servidores">Carregando...</div>
 
-    <button onclick="reportarFila()">📢 Reportar minha fila</button>
-    
-    <p class="update">Última atualização: <span id="hora">--:--:--</span></p>
-    <p class="dica">💡 Dica: 6h-10h da manhã sempre tá vazio</p>
-    <p class="aviso">*Dados baseados em reports da comunidade. Nvidia não tem API oficial</p>
-  </div>
+  <h1>🟦 AULA 1: print()</h1>
+  <p>Repete isso 3x e clica em Rodar</p>
+  
+  <textarea id="editor">print("Salve")
+print("Eu sou programador")
+print("E não pago curso")</textarea>
+  
+  <br>
+  <button onclick="rodar()">1 AULA - RODAR</button>
+  
+  <div id="saida"></div>
 
   <script>
-    // DADOS INICIAIS - depois a gente troca por JSON
-    let servidores = [
-      { nome: "BR-SP", fila: 253, link: "https://play.geforcenow.com" },
-      { nome: "BR-RJ", fila: 120, link: "https://play.geforcenow.com" },
-      { nome: "US-EAST", fila: 42, link: "https://play.geforcenow.com" },
-      { nome: "US-WEST", fila: 310, link: "https://play.geforcenow.com" },
-      { nome: "EU-WEST", fila: 180, link: "https://play.geforcenow.com" }
-    ];
-
-    function getClasse(fila) {
-      if(fila < 50) return 'bom';
-      if(fila 
+    function rodar() {
+      let codigo = document.getElementById("editor").value;
+      let saida = document.getElementById("saida");
+      saida.innerHTML = codigo.replace(/print\(/g, "").replace(/\)/g
