@@ -8,14 +8,15 @@ canvas{background:#4a7c59;display:none}
 .btn:hover{background:#003f7a}
 input{padding:15px;font-size:20px;width:260px;text-align:center;text-transform:uppercase;border-radius:8px;border:none}
 #roomCode{color:gold;font-size:32px;letter-spacing:5px}
+#copied{color:#00ff00;display:none}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script></head><body>
 
-<!-- UNICA TELA -->
 <div id="menu" class="screen">
 <h1>🇫🇷 SUPER WAR ONLINE 🇬🇧</h1>
 <button class="btn" onclick="hostGame()">CRIAR SALA</button><br>
 <h3>SEU CÓDIGO: <div id="roomCode">------</div></h3>
+<div id="copied">COPIADO! MANDA PRO AMIGO</div>
 <input id="joinCode" placeholder="DIGITE O CÓDIGO AQUI" maxlength="6"><br>
 <button class="btn" onclick="joinGame()">ENTRAR NA SALA</button>
 <p>Max 6 jogadores. Manda o código pro amigo</p>
@@ -23,46 +24,57 @@ input{padding:15px;font-size:20px;width:260px;text-align:center;text-transform:u
 
 <canvas id="game"></canvas>
 <script>
-let peer, conns=[], myCode="", players={}, me={x:100,y:300,id:""};
+let peer, conns=[], myCode="", players={}, me={x:100,y:300};
 const c=document.getElementById('game'), ctx=c.getContext('2d');
 let keys={};
 
-// 1. GERAR CODIGO DE 6 LETRAS/NUMEROS
 function makeCode(){
  let chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
  myCode=''; for(let i=0;i<6;i++) myCode+=chars[Math.floor(Math.random()*36)];
  return myCode;
 }
 
-// 2. CRIAR SALA
+// FUNÇÃO NOVA: COPIAR PRA AREA DE TRANSFERENCIA
+function copyCode(code){
+ navigator.clipboard.writeText(code).then(()=>{
+  document.getElementById('copied').style.display='block';
+  setTimeout(()=>document.getElementById('copied').style.display='none',2000);
+ });
+}
+
 function hostGame(){
  makeCode();
- me.id = myCode; // host usa o codigo como ID
+ me.id = myCode;
  document.getElementById('roomCode').innerText = myCode;
+ copyCode(myCode); // <-- COPIA AUTOMATICO AQUI
  peer = new Peer(myCode);
  peer.on('connection', c => {
   conns.push(c);
   setupConn(c);
+  c.send(me);
  });
  peer.on('error', err=>alert('Erro: '+err));
  startGame();
 }
 
-// 3. ENTRAR NA SALA
 function joinGame(){
  let code = document.getElementById('joinCode').value.toUpperCase();
  if(code.length!=6) return alert('Digite 6 caracteres');
- peer = new Peer(); // ID aleatorio pra quem entra
+ peer = new Peer();
  me.id = peer.id;
  conn = peer.connect(code);
- conn.on('open', ()=>{conns.push(conn); setupConn(conn); startGame();})
+ conn.on('open', ()=>{
+  conns.push(conn);
+  setupConn(conn);
+  conn.send(me);
+  startGame();
+ })
  conn.on('error', err=>alert('Sala não encontrada'));
 }
 
-// 4. CONEXAO P2P - PRA VARIOS
 function setupConn(connection){
  connection.on('data', data => {
-  if(data.id!= me.id) players[data.id] = data; // não salva a si mesmo
+  players[connection.peer] = data;
  });
  connection.on('close', ()=>{
   delete players[connection.peer];
@@ -74,12 +86,7 @@ function startGame(){
  document.getElementById('menu').style.display='none';
  c.style.display='block';
  c.width=innerWidth; c.height=innerHeight;
-
- // Manda tua posição pra todos 20x por segundo
- setInterval(()=>{
-  conns.forEach(c=>{ if(c.open) c.send(me) })
- }, 50);
-
+ setInterval(()=>{ conns.forEach(c=>{ if(c.open) c.send(me) }) }, 50);
  loop();
 }
 
@@ -89,21 +96,19 @@ document.onkeyup=e=>keys[e.key.toLowerCase()]=0;
 function update(){
  if(keys['w'])me.y-=3; if(keys['s'])me.y+=3;
  if(keys['a'])me.x-=3; if(keys['d'])me.x+=3;
+ me.x = Math.max(0, Math.min(c.width-20, me.x));
+ me.y = Math.max(0, Math.min(c.height-20, me.y));
 }
 
 function draw(){
  ctx.clearRect(0,0,c.width,c.height);
- // DESENHA TU
  ctx.fillStyle='#0055A4'; ctx.fillRect(me.x,me.y,20,20);
  ctx.fillText('TU',me.x,me.y-5);
-
- // DESENHA OS OUTROS
  ctx.fillStyle='#C8102E';
  for(let id in players){
   ctx.fillRect(players[id].x,players[id].y,20,20);
   ctx.fillText('P',players[id].x,players[id].y-5);
  }
-
  ctx.fillStyle='white';
  ctx.fillText('Online: '+ (Object.keys(players).length+1),10,20);
 }
