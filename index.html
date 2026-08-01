@@ -1,21 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>SUPER WAR</title>
 <style>
-body {
-  background: blue;
-  color: white;
-  text-align: center;
-  padding: 100px;
-}
-button {
-  padding: 20px;
-  font-size: 20px;
-}
+body { margin:0; background:#2a2a2a; overflow:hidden; font-family:Arial; }
+canvas { background:#4a7c59; display:block; margin:0 auto; }
+#ui { position:absolute; top:10px; left:10px; color:white; font-size:18px; }
 </style>
 </head>
 <body>
-  <h1>🟦 SITE AZUL FUNCIONANDO</h1>
-  <button onclick="alert('Clicou!')">1 AULA</button>
+<div id="ui">🇫🇷 FRANÇA | Vida: <span id="hp">100</span></div>
+<canvas id="game" width="800" height="600"></canvas>
+<script>
+const c = document.getElementById('game');
+const ctx = c.getContext('2d');
+
+let player = {x:100, y:300, w:20, h:20, color:'#0055A4', hp:100, speed:3};
+let napoleon = {x:80, y:300, w:22, h:22, color:'#FFD700', speed:2.5};
+let enemies = [];
+for(let i=0; i<3; i++) enemies.push({x:600+Math.random()*100, y:100+i*150, w:20, h:20, color:'#C8102E', speed:2});
+
+let keys = {};
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+function update(){
+  // Movimento jogador
+  if(keys['w']) player.y -= player.speed;
+  if(keys['s']) player.y += player.speed;
+  if(keys['a']) player.x -= player.speed;
+  if(keys['d']) player.x += player.speed;
+
+  // Napoleão segue o player
+  let dx = player.x - napoleon.x;
+  let dy = player.y - napoleon.y;
+  napoleon.x += dx * 0.05;
+  napoleon.y += dy * 0.05;
+
+  // Inimigos perseguem
+  enemies.forEach(e => {
+    let dx = player.x - e.x;
+    let dy = player.y - e.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist < 200){
+      e.x += (dx/dist) * e.speed;
+      e.y += (dy/dist) * e.speed;
+    }
+    // Colisão
+    if(dist < 20) player.hp -= 0.5;
+  });
+
+  document.getElementById('hp').innerText = Math.max(0, Math.floor(player.hp));
+}
+
+function draw(){
+  ctx.clearRect(0,0,800,600);
+  
+  // Chão com grama
+  ctx.fillStyle = '#4a7c59';
+  ctx.fillRect(0,0,800,600);
+
+  // Desenha tudo
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  
+  ctx.fillStyle = napoleon.color;
+  ctx.fillRect(napoleon.x, napoleon.y, napoleon.w, napoleon.h);
+  
+  ctx.fillStyle = '#C8102E';
+  enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
+}
+
+function loop(){
+  update();
+  draw();
+  if(player.hp > 0) requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>
