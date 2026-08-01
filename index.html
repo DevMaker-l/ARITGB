@@ -1,27 +1,44 @@
 <!DOCTYPE html>
-<html><head><title>SUPER WAR NET</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html><head><title>SUPER WAR P2P</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;background:#1a1a1a;color:white;font-family:Arial;text-align:center}
 canvas{background:#4a7c59;display:none}
-.screen{padding-top:50px}
-.btn{background:#0055A4;padding:15px 30px;margin:10px;border:none;color:white;font-size:18px;cursor:pointer;border-radius:8px}
-input{padding:10px;font-size:16px;width:300px;text-align:center}
-#myId{color:gold;font-size:20px}
+.screen{padding-top:80px}
+.btn{background:#0055A4;padding:18px 40px;margin:15px;border:none;color:white;font-size:20px;cursor:pointer;border-radius:10px;width:300px}
+input{padding:15px;font-size:20px;width:260px;text-align:center;text-transform:uppercase;border-radius:8px;border:none}
+#roomCode{color:gold;font-size:32px;letter-spacing:5px}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script></head><body>
 
-<!-- TELA NET -->
-<div id="net" class="screen">
+<!-- UNICA TELA -->
+<div id="menu" class="screen">
 <h1>🇫🇷 SUPER WAR ONLINE 🇬🇧</h1>
-<h3>SEU ID: <span id="myId">CARREGANDO...</span></h3>
-<button class="btn" onclick="hostGame()">1. CRIAR SALA</button><br>
-<input id="friendId" placeholder="COLA O ID DO AMIGO AQUI"><br>
-<button class="btn" onclick="joinGame()">2. ENTRAR NA SALA</button>
-<p>Max 6 pessoas por sala. Mesma Wi-Fi = 0 lag</p>
+<button class="btn" onclick="hostGame()">CRIAR SALA</button><br>
+<h3>SEU CÓDIGO: <div id="roomCode">------</div></h3>
+<input id="joinCode" placeholder="DIGITE O CÓDIGO AQUI" maxlength="6"><br>
+<button class="btn" onclick="joinGame()">ENTRAR NA SALA</button>
 </div>
 
 <canvas id="game"></canvas>
 <script>
-let peer, conn, player={x:100,y:300}, enemies={}, keys={};
+let peer, conn, myCode="", players={}, me={x:100,y:300};
 const c=document.getElementById('game'), ctx=c.getContext('2d');
-c.width=innerWidth; c.height
+c.width=innerWidth; c.height=innerHeight;
+
+// 1. GERAR CODIGO DE 6 LETRAS/NUMEROS
+function makeCode(){
+ let chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+ myCode=''; for(let i=0;i<6;i++) myCode+=chars[Math.floor(Math.random()*36)];
+ return myCode;
+}
+
+// 2. CRIAR SALA
+function hostGame(){
+ makeCode();
+ document.getElementById('roomCode').innerText = myCode;
+ peer = new Peer(myCode); // o codigo vira o ID da sala
+ peer.on('connection', c => {conn=c; setupConn()});
+ startGame();
+}
+
+// 3. ENTRAR NA
