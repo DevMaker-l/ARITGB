@@ -1,86 +1,27 @@
 <!DOCTYPE html>
-<html><head><title>SUPER WAR</title><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<html><head><title>SUPER WAR NET</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;background:#1a1a1a;color:white;font-family:Arial;text-align:center;overflow:hidden;touch-action:none}
+body{margin:0;background:#1a1a1a;color:white;font-family:Arial;text-align:center}
 canvas{background:#4a7c59;display:none}
 .screen{padding-top:50px}
 .btn{background:#0055A4;padding:15px 30px;margin:10px;border:none;color:white;font-size:18px;cursor:pointer;border-radius:8px}
-.btn:hover{background:#003f7a}
-.char{width:64px;height:64px;display:inline-block;margin:10px;border:2px solid #555;cursor:pointer}
-.char:hover{border-color:gold}
-#serverList{max-height:200px;overflow-y:auto}
-</style></head><body>
+input{padding:10px;font-size:16px;width:300px;text-align:center}
+#myId{color:gold;font-size:20px}
+</style>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script></head><body>
 
-<!-- TELA START -->
-<div id="start" class="screen">
-<h1>🇫🇷 SUPER WAR 🇬🇧</h1>
-<button class="btn" onclick="show('menu')">JOGAR</button>
+<!-- TELA NET -->
+<div id="net" class="screen">
+<h1>🇫🇷 SUPER WAR ONLINE 🇬🇧</h1>
+<h3>SEU ID: <span id="myId">CARREGANDO...</span></h3>
+<button class="btn" onclick="hostGame()">1. CRIAR SALA</button><br>
+<input id="friendId" placeholder="COLA O ID DO AMIGO AQUI"><br>
+<button class="btn" onclick="joinGame()">2. ENTRAR NA SALA</button>
+<p>Max 6 pessoas por sala. Mesma Wi-Fi = 0 lag</p>
 </div>
-
-<!-- TELA MENU -->
-<div id="menu" class="screen" style="display:none">
-<h2>ESCOLHA SEU PAÍS</h2>
-<div id="chars"></div>
-<h2>SERVIDORES</h2>
-<div id="serverList">
- <button class="btn" onclick="startGame('solo')">1. SOLO vs BOTS</button><br>
- <button class="btn" onclick="alert('Update 5')">2. HOST - 0/6</button><br>
-</div>
-</body>
 
 <canvas id="game"></canvas>
 <script>
-let state="menu", player, napoleon, enemies=[], bullets=[], keys={}, sprites=new Image();
-sprites.src="heroes.png"; // usa a imagem que gerei
+let peer, conn, player={x:100,y:300}, enemies={}, keys={};
 const c=document.getElementById('game'), ctx=c.getContext('2d');
-c.width=innerWidth; c.height=innerHeight;
-
-// 1. CRIAR BOTOES DE PERSONAGEM
-const heroData=[{x:0,n:"Napoleão"},{x:16,n:"Wellington"},{x:32,n:"Kutuzov"},{x:48,n:"Blücher"}];
-heroData.forEach((h,i)=>{
- let d=document.createElement('div'); d.className="char";
- d.style.background=`url(heroes.png) -${h.x*16}px 0`;
- d.onclick=()=>selectHero(i);
- document.getElementById('chars').appendChild(d);
-});
-
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.style.display='none');document.getElementById(id).style.display='block'}
-function selectHero(i){player={...heroData[i],x:100,y:300,hp:100}; startGame('solo')}
-
-// 2. INICIAR JOGO
-function startGame(mode){
- show('game'); c.style.display='block';
- enemies=[{x:500,y:100,hp:3},{x:500,y:300,hp:3},{x:500,y:500,hp:3}]; // BOTS BURROS
- loop();
-}
-
-// 3. CONTROLES PC + CEL
-document.onkeydown=e=>keys[e.key]=1; document.onkeyup=e=>keys[e.key]=0;
-document.ontouchstart=e=>{if(e.touches[0].clientX<100)keys['a']=1; if(e.touches[0].clientX>innerWidth-100)keys['d']=1}
-
-// 4. LOOP
-function update(){
- if(keys['w'])player.y-=3; if(keys['s'])player.y+=3; if(keys['a'])player.x-=3; if(keys['d'])player.x+=3;
- if(keys[' ']){bullets.push({x:player.x+32,y:player.y+16}); keys[' ']=0} // TIRO
-
- enemies.forEach(e=>{ // IA BURRA: só anda pro player
-  let dx=player.x-e.x, dy=player.y-e.y, dist=Math.hypot(dx,dy);
-  if(dist<300){e.x+=dx/dist*2; e.y+=dy/dist*2}
-  if(dist<30)player.hp-=1;
- });
- bullets.forEach(b=>{b.x+=7; enemies.forEach(e=>{if(Math.hypot(b.x-e.x,b.y-e.y)<20)e.hp--})})
- bullets=bullets.filter(b=>b.x<innerWidth && enemies.some(e=>e.hp>0));
- enemies=enemies.filter(e=>e.hp>0);
- if(player.hp<=0)alert('DERROTA'),location.reload();
-}
-
-function draw(){
- ctx.clearRect(0,0,c.width,c.height);
- ctx.drawImage(sprites,player.x*16,0,16,16,player.x,player.y,32,32);
- enemies.forEach(e=>ctx.drawImage(sprites,16,0,16,16,e.x,e.y,32,32));
- ctx.fillStyle='yellow'; bullets.forEach(b=>ctx.fillRect(b.x,b.y,6,2));
- ctx.fillText('Vida: '+player.hp,10,20);
-}
-
-function loop(){update();draw();requestAnimationFrame(loop)}
-</script></body></html>
+c.width=innerWidth; c.height
