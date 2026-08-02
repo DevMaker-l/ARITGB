@@ -1,117 +1,37 @@
 <!DOCTYPE html>
-<html><head><title>SUPER WAR P2P</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{margin:0;background:#1a1a1a;color:white;font-family:Arial;text-align:center;overflow:hidden}
-canvas{background:#4a7c59;display:none}
-.screen{padding-top:80px}
-.btn{background:#0055A4;padding:18px 40px;margin:15px;border:none;color:white;font-size:20px;cursor:pointer;border-radius:10px;width:300px}
-.btn:hover{background:#003f7a}
-input{padding:15px;font-size:20px;width:260px;text-align:center;text-transform:uppercase;border-radius:8px;border:none}
-#roomCode{color:gold;font-size:32px;letter-spacing:5px}
-#copied{color:#00ff00;display:none}
-</style>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script></head><body>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Virar APK</title>
+  <style>
+    body { font-family: Arial; background:#000; color:#0f0; text-align:center; padding-top:100px; }
+    input { width:70%; padding:15px; font-size:18px; }
+    button { padding:15px 30px; font-size:18px; background:#0f0; border:none; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>COLA O LINK E VIRA APK</h1>
+  
+  <input type="url" id="url" placeholder="https://seusite.com" />
+  <br><br>
+  <button onclick="gerar()">GERAR</button>
 
-<div id="menu" class="screen">
-<h1>🇫🇷 SUPER WAR ONLINE 🇬🇧</h1>
-<button class="btn" onclick="hostGame()">CRIAR SALA</button><br>
-<h3>SEU CÓDIGO: <div id="roomCode">------</div></h3>
-<div id="copied">COPIADO! MANDA PRO AMIGO</div>
-<input id="joinCode" placeholder="DIGITE O CÓDIGO AQUI" maxlength="6"><br>
-<button class="btn" onclick="joinGame()">ENTRAR NA SALA</button>
-<p>Max 6 jogadores. Manda o código pro amigo</p>
-</div>
+  <div id="res"></div>
 
-<canvas id="game"></canvas>
-<script>
-let peer, conns=[], myCode="", players={}, me={x:100,y:300};
-const c=document.getElementById('game'), ctx=c.getContext('2d');
-let keys={};
-
-function makeCode(){
- let chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
- myCode=''; for(let i=0;i<6;i++) myCode+=chars[Math.floor(Math.random()*36)];
- return myCode;
-}
-
-// FUNÇÃO NOVA: COPIAR PRA AREA DE TRANSFERENCIA
-function copyCode(code){
- navigator.clipboard.writeText(code).then(()=>{
-  document.getElementById('copied').style.display='block';
-  setTimeout(()=>document.getElementById('copied').style.display='none',2000);
- });
-}
-
-function hostGame(){
- makeCode();
- me.id = myCode;
- document.getElementById('roomCode').innerText = myCode;
- copyCode(myCode); // <-- COPIA AUTOMATICO AQUI
- peer = new Peer(myCode);
- peer.on('connection', c => {
-  conns.push(c);
-  setupConn(c);
-  c.send(me);
- });
- peer.on('error', err=>alert('Erro: '+err));
- startGame();
-}
-
-function joinGame(){
- let code = document.getElementById('joinCode').value.toUpperCase();
- if(code.length!=6) return alert('Digite 6 caracteres');
- peer = new Peer();
- me.id = peer.id;
- conn = peer.connect(code);
- conn.on('open', ()=>{
-  conns.push(conn);
-  setupConn(conn);
-  conn.send(me);
-  startGame();
- })
- conn.on('error', err=>alert('Sala não encontrada'));
-}
-
-function setupConn(connection){
- connection.on('data', data => {
-  players[connection.peer] = data;
- });
- connection.on('close', ()=>{
-  delete players[connection.peer];
-  conns = conns.filter(c=>c!=connection);
- });
-}
-
-function startGame(){
- document.getElementById('menu').style.display='none';
- c.style.display='block';
- c.width=innerWidth; c.height=innerHeight;
- setInterval(()=>{ conns.forEach(c=>{ if(c.open) c.send(me) }) }, 50);
- loop();
-}
-
-document.onkeydown=e=>keys[e.key.toLowerCase()]=1;
-document.onkeyup=e=>keys[e.key.toLowerCase()]=0;
-
-function update(){
- if(keys['w'])me.y-=3; if(keys['s'])me.y+=3;
- if(keys['a'])me.x-=3; if(keys['d'])me.x+=3;
- me.x = Math.max(0, Math.min(c.width-20, me.x));
- me.y = Math.max(0, Math.min(c.height-20, me.y));
-}
-
-function draw(){
- ctx.clearRect(0,0,c.width,c.height);
- ctx.fillStyle='#0055A4'; ctx.fillRect(me.x,me.y,20,20);
- ctx.fillText('TU',me.x,me.y-5);
- ctx.fillStyle='#C8102E';
- for(let id in players){
-  ctx.fillRect(players[id].x,players[id].y,20,20);
-  ctx.fillText('P',players[id].x,players[id].y-5);
- }
- ctx.fillStyle='white';
- ctx.fillText('Online: '+ (Object.keys(players).length+1),10,20);
-}
-
-function loop(){update();draw();requestAnimationFrame(loop)}
-</script></body></html>
+  <script>
+    async function gerar() {
+      let url = document.getElementById('url').value;
+      document.getElementById('res').innerHTML = "Gerando... 1 min";
+      
+      let r = await fetch("https://pwabuilder-api.azurewebsites.net/api/manifest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url }) // SÓ A URL. NADA MAIS
+      });
+      
+      let data = await r.json();
+      document.getElementById('res').innerHTML = `<a href="${data.androidPackageUrl}"><button>BAIXAR APK</button></a>`;
+    }
+  </script>
+</body>
+</html>
